@@ -1,0 +1,42 @@
+{
+    "compilerOptions": {
+        "target": "es2020",
+        "module": "ES2020",
+        "esModuleInterop": true,
+        "outDir": "./preBuild/_102041_/",
+        "rootDir": "./project/_102041_",
+        "strict": true,
+        "removeComments": false,
+        "noUnusedParameters": false,
+        "skipLibCheck": false,
+        "forceConsistentCasingInFileNames": true,
+        "sourceMap": false,
+        "declaration": false,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": false,
+        "noImplicitAny": false,
+        "strictNullChecks": false,
+        "paths": {
+            "/_102041_/*": [
+                "./*"
+            ],
+            "/_102027_/*": [
+                "node_modules/mls-102027/*"
+            ]
+        },
+        "lib": [
+            "dom",
+            "ES2022"
+        ]
+    },
+    "include": [
+        "project/_102041_/**/*",
+        "monaco.d.ts",
+        "mls.d.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "**/*.spec.ts",
+        "l2/*.ts"
+    ]
+}
