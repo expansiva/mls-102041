@@ -1,5 +1,16 @@
 /// <mls fileReference="_102041_/l2/collab-nav-3.ts" enhancement="_102020_/l2/enhancementAura.ts"/>
 
+/// **collab_i18n_start**
+const message_en = {
+    loading: 'Loading...',
+};
+type MessageType = typeof message_en;
+const message_pt: MessageType = {
+    loading: 'Carregando...',
+};
+const messages: { [key: string]: MessageType } = { en: message_en, pt: message_pt };
+/// **collab_i18n_end**
+
 import { nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { StateLitElement } from '/_102027_/l2/stateLitElement.js';
@@ -29,6 +40,8 @@ export class CollabNav3 extends StateLitElement {
         return nav2?.actualServices || {};
     }
 
+    private msg: MessageType = messages['en'];
+
     public args: Record<string, string>;
 
     public getActiveInstance(position: 'left' | 'right') {
@@ -36,7 +49,9 @@ export class CollabNav3 extends StateLitElement {
         if (!page) return undefined;
         const nav3 = page.querySelector(`collab-nav-3[toolbarposition="${position}"`) as CollabNav3;
         if (!nav3) return undefined;
-        return nav3._state[position][nav3.getAttribute('data-service')];
+        const serviceAttr = nav3.getAttribute('data-service');
+        if (!serviceAttr) return undefined;
+        return nav3._state[position][serviceAttr];
     }
 
     public layout() { this._layout(this.getAttribute('msize')); }
@@ -60,44 +75,44 @@ export class CollabNav3 extends StateLitElement {
     render() { return nothing; }
 
     firstUpdated() {
+        this.msg = messages[this.getMessageKey(messages)] || messages['en'];
         Promise.all(['collab-nav-2'].map(wc => customElements.whenDefined(wc))).then(() => {
             if (this.previousElementSibling) this._alreadyDefined = true;
         });
     }
 
     updated(changed: Map<string, unknown>) {
-        const { name, newValue, oldValue } = this._changedEntry(changed);
-        if (!name) return;
-
-        if (name === 'msize') this._layout(newValue);
-        else if (name === 'level' && oldValue !== newValue) this._onLevelChange(+(oldValue || '0'));
-        else if (name === 'status' && newValue === 'enabled') this._init();
-        else if (name === 'loading' && newValue === 'true') this._showLoading();
-        else if (name === 'loading' && newValue === 'false') this._hideLoading();
-        else if (name === 'loadingfeedback') this._changeLoadingMessage(newValue);
-        else if (name === 'error' && newValue === '') this._hideError();
-        else if (name === 'error' && newValue) this._showError(newValue);
-        else if (name === 'dataService') {
-            const isArgsOnly = newValue === (changed.get('dataService') as any) && +this.level === this._lastLevel;
-            if (newValue === (changed.get('dataService') as any) && +this.level === this._lastLevel) {
-                this._showServiceOnlyArgs(newValue);
+        if (changed.has('msize')) {
+            this._layout(this.msize);
+        }
+        if (changed.has('level')) {
+            const oldLevel = changed.get('level') as string;
+            if (oldLevel !== this.level) this._onLevelChange(+(oldLevel || '0'));
+        }
+        if (changed.has('status') && this.status === 'enabled') {
+            this._init();
+        }
+        if (changed.has('loading')) {
+            if (this.loading === 'true') this._showLoading();
+            else if (this.loading === 'false') this._hideLoading();
+        }
+        if (changed.has('loadingfeedback')) {
+            this._changeLoadingMessage(this.loadingfeedback);
+        }
+        if (changed.has('error')) {
+            if (this.error === '') this._hideError();
+            else if (this.error) this._showError(this.error);
+        }
+        if (changed.has('dataService')) {
+            const oldService = changed.get('dataService') as string;
+            if (this.dataService === oldService && +this.level === this._lastLevel) {
+                this._showServiceOnlyArgs(this.dataService);
             } else {
                 this._lastLevel = +this.level;
-                if (this._alreadyDefined) { this._showService(newValue); return; }
-                Promise.all(['collab-nav-2'].map(wc => customElements.whenDefined(wc))).then(() => this._showService(newValue));
+                if (this._alreadyDefined) { this._showService(this.dataService); return; }
+                Promise.all(['collab-nav-2'].map(wc => customElements.whenDefined(wc))).then(() => this._showService(this.dataService));
             }
         }
-    }
-
-    private _changedEntry(changed: Map<string, unknown>): { name: string; newValue: string; oldValue: string } {
-        for (const [key] of changed) {
-            const propToAttr: Record<string, string> = {
-                dataService: 'data-service', level: 'level', status: 'status', msize: 'msize',
-                loading: 'loading', error: 'error', loadingfeedback: 'loadingfeedback',
-            };
-            return { name: propToAttr[key] || key, newValue: this[key as keyof this] as string, oldValue: changed.get(key) as string };
-        }
-        return { name: '', newValue: '', oldValue: '' };
     }
 
     private _init() {
@@ -371,7 +386,7 @@ export class CollabNav3 extends StateLitElement {
         if (!container) return;
         const ds = container.getAttribute('data-service');
         const span = this._loadings[ds]?.querySelector('span');
-        if (span) span.innerHTML = msg || 'Loading...';
+        if (span) span.innerHTML = msg || this.msg.loading;
     }
 
     private _showError(error: string) {

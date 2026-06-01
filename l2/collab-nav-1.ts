@@ -1,5 +1,30 @@
 /// <mls fileReference="_102041_/l2/collab-nav-1.ts" enhancement="_102020_/l2/enhancementAura.ts"/>
 
+/// **collab_i18n_start**
+const message_en = {
+    l7Collab: 'L7 - Collab',
+    l6Site: 'L6 - Site',
+    l5Project: 'L5 - Project',
+    l4Business: 'L4 - Business',
+    l3Design: 'L3 - Design',
+    l2Components: 'L2 - Components',
+    l1Backend: 'L1 - Back-End',
+    user: 'User',
+};
+type MessageType = typeof message_en;
+const message_pt: MessageType = {
+    l7Collab: 'L7 - Collab',
+    l6Site: 'L6 - Site',
+    l5Project: 'L5 - Projeto',
+    l4Business: 'L4 - Negócios',
+    l3Design: 'L3 - Design',
+    l2Components: 'L2 - Componentes',
+    l1Backend: 'L1 - Back-End',
+    user: 'Usuário',
+};
+const messages: { [key: string]: MessageType } = { en: message_en, pt: message_pt };
+/// **collab_i18n_end**
+
 import { html, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
@@ -32,6 +57,9 @@ export class CollabNav1 extends StateLitElement {
     get tabActive() { return this.tabindexactive ? +this.tabindexactive : -1; }
     get actualLevel(): number { return [7, 6, 5, 4, 3, 2, 1, 0][this.tabActive > -1 ? this.tabActive : 0]; }
     get project() { return +(this.getAttribute('initialproject') || '0'); }
+
+    private msg: MessageType = messages['en'];
+    private _currentLang: string = 'en';
 
     public services: IServicesByProjectConfig = { services: [] };
     public actualServices: INav1CollabServiceData;
@@ -81,6 +109,12 @@ export class CollabNav1 extends StateLitElement {
     }
 
     render() {
+        const lang = this.getMessageKey(messages);
+        if (lang !== this._currentLang) {
+            this._currentLang = lang;
+            this.msg = messages[lang] || messages['en'];
+            this._items = this._defaultJson();
+        }
         return html`
             <nav class="fa">
                 ${this._items.map((item, idx) => {
@@ -215,7 +249,9 @@ export class CollabNav1 extends StateLitElement {
         await Promise.all(['collab-nav-2', 'collab-nav-3'].map(wc => customElements.whenDefined(wc)));
         const collabPage = document.querySelector('collab-page');
         if (!collabPage) return;
-        const [nav2Right, nav2Left] = Array.from(collabPage.querySelectorAll('collab-nav-2'));
+        const nav2s = Array.from(collabPage.querySelectorAll('collab-nav-2'));
+        if (nav2s.length < 2) return;
+        const [nav2Right, nav2Left] = nav2s;
         const collabSpliter = collabPage.querySelector('collab-spliter');
         collabPage.querySelectorAll('collab-nav-3').forEach(nav3 => nav3.setAttribute('level', String(this.actualLevel)));
         nav2Right.setAttribute('status', 'start'); nav2Left.setAttribute('status', 'start');
@@ -245,7 +281,8 @@ export class CollabNav1 extends StateLitElement {
             await Promise.all(['collab-nav-2', 'collab-nav-3'].map(wc => customElements.whenDefined(wc)));
             const page = document.querySelector('collab-page');
             if (!page) return;
-            const [nav2Right, nav2Left] = Array.from(page.querySelectorAll('collab-nav-2'));
+            const nav2sStatus = Array.from(page.querySelectorAll('collab-nav-2'));
+            const [nav2Right, nav2Left] = nav2sStatus;
             nav2Right?.setAttribute('status', 'start'); nav2Left?.setAttribute('status', 'start');
         }
         if (this.status === 'anonymous') { await this._changeStatusIfAnonymous(); return; }
@@ -391,7 +428,7 @@ export class CollabNav1 extends StateLitElement {
     private async _getDetailsService2(content: string): Promise<INav1Service | undefined> {
         if (typeof content !== 'string') return undefined;
         const markers = ['this.details =', 'details ='];
-        let startMarker: string, startIndex = -1;
+        let startMarker: string | undefined, startIndex = -1;
         for (const m of markers) {
             const i = content.indexOf(m);
             if (i !== -1 && (startIndex === -1 || i < startIndex)) { startIndex = i; startMarker = m; }
@@ -471,14 +508,14 @@ export class CollabNav1 extends StateLitElement {
 
     private _defaultJson(): ICollabNav1Level[] {
         return [
-            { level: 7, text: '7', icon: '&#xf015', tooltip: 'L7 - Collab', mode: 'tab' },
-            { level: 6, text: '6', icon: '&#xf007', tooltip: 'L6 - Site', mode: 'tab' },
-            { level: 5, text: '5', icon: '&#xf013', tooltip: 'L5 - Project', mode: 'tab' },
-            { level: 4, text: '4', icon: '&#xf0e8', tooltip: 'L4 - Business', mode: 'tab' },
-            { level: 3, text: '3', icon: '&#xf5ae', tooltip: 'L3 - Design', mode: 'tab' },
-            { level: 2, text: '2', icon: '&#xf1b3', tooltip: 'L2 - Components', mode: 'tab' },
-            { level: 1, text: '1', icon: '&#xf233', tooltip: 'L1 - Back-End', mode: 'tab' },
-            { level: 0, text: '', icon: '&#xf2bd', tooltip: 'User', mode: 'user', align: 'right' },
+            { level: 7, text: '7', icon: '&#xf015', tooltip: this.msg.l7Collab, mode: 'tab' },
+            { level: 6, text: '6', icon: '&#xf007', tooltip: this.msg.l6Site, mode: 'tab' },
+            { level: 5, text: '5', icon: '&#xf013', tooltip: this.msg.l5Project, mode: 'tab' },
+            { level: 4, text: '4', icon: '&#xf0e8', tooltip: this.msg.l4Business, mode: 'tab' },
+            { level: 3, text: '3', icon: '&#xf5ae', tooltip: this.msg.l3Design, mode: 'tab' },
+            { level: 2, text: '2', icon: '&#xf1b3', tooltip: this.msg.l2Components, mode: 'tab' },
+            { level: 1, text: '1', icon: '&#xf233', tooltip: this.msg.l1Backend, mode: 'tab' },
+            { level: 0, text: '', icon: '&#xf2bd', tooltip: this.msg.user, mode: 'user', align: 'right' },
         ];
     }
 }

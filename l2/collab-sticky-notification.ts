@@ -1,5 +1,22 @@
 /// <mls fileReference="_102041_/l2/collab-sticky-notification.ts" enhancement="_102020_/l2/enhancementAura.ts"/>
 
+/// **collab_i18n_start**
+const message_en = {
+    of: 'of',
+    information: 'Information',
+    alert: 'Alert',
+    error: 'Error',
+};
+type MessageType = typeof message_en;
+const message_pt: MessageType = {
+    of: 'de',
+    information: 'Informação',
+    alert: 'Alerta',
+    error: 'Erro',
+};
+const messages: { [key: string]: MessageType } = { en: message_en, pt: message_pt };
+/// **collab_i18n_end**
+
 import { html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { StateLitElement } from '/_102027_/l2/stateLitElement.js';
@@ -25,6 +42,8 @@ export class CollabStickyNotification extends StateLitElement {
     @state() private _actualMessage: IMessage | undefined;
     @state() private _isOpen: boolean = false;
     @state() private _actualOptions: IMessageOptions = { clearOnClose: true, autoClose: false, timeToClose: 5000 };
+
+    private msg: MessageType = messages['en'];
 
     private readonly _defaultOptions: IMessageOptions = { clearOnClose: true, autoClose: false, timeToClose: 5000 };
 
@@ -82,6 +101,7 @@ export class CollabStickyNotification extends StateLitElement {
     }
 
     render() {
+        this.msg = messages[this.getMessageKey(messages)] || messages['en'];
         if (!this._isOpen || !this._actualMessage) return html`<div></div>`;
         const iconMap: Record<IMessageType, string> = {
             information: 'fa-circle-info',
@@ -94,7 +114,7 @@ export class CollabStickyNotification extends StateLitElement {
                 <div class="controllers">
                     <i class="fa fa-caret-left" @click=${() => this._onLeftClick()}></i>
                     <span>${this._actualIndex + 1}</span>
-                    <span>de</span>
+                    <span>${this.msg.of}</span>
                     <span>${this._messages.length}</span>
                     <i class="fa fa-caret-right" @click=${() => this._onRightClick()}></i>
                 </div>

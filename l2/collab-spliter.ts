@@ -82,7 +82,7 @@ export class CollabSpliter extends StateLitElement {
         const inner = document.createElement('div');
         this._resizerSplitter.appendChild(inner);
 
-        let lastPageX = 0;
+        let lastPageX: number | undefined = 0;
         let isMobile = false;
 
         const resize = (event: MouseEvent) => {
@@ -90,7 +90,7 @@ export class CollabSpliter extends StateLitElement {
             document.querySelectorAll('iframe').forEach(f => f.style.pointerEvents = 'none');
             if (isMobile && !lastPageX) { lastPageX = event.pageX; return; }
 
-            const movePx = isMobile ? event.pageX - lastPageX : event.movementX;
+            const movePx = isMobile ? event.pageX - (lastPageX ?? 0) : event.movementX;
             const pxLeft = this._leftPanel.clientWidth + movePx;
             const pxRight = this._rightPanel.clientWidth - movePx;
             const { width } = this.msizeObj;
@@ -123,7 +123,8 @@ export class CollabSpliter extends StateLitElement {
         };
 
         const touch2Mouse = (ev: TouchEvent) => {
-            ev.changedTouches[0].target.dispatchEvent(this._convertTouch(ev));
+            const mouseEvent = this._convertTouch(ev);
+            if (mouseEvent) ev.changedTouches[0].target.dispatchEvent(mouseEvent);
             ev.preventDefault();
         };
 
@@ -161,7 +162,7 @@ export class CollabSpliter extends StateLitElement {
         };
 
         this._resizerSplitter.ondblclick = () => {
-            const level = this.getAttribute('level') || '7';
+            const level = +(this.getAttribute('level') || '7');
             if (this._fullScreenData[level]) {
                 this._fullScreenData[level] = '';
                 this._setMSplitFullScreen();
@@ -180,7 +181,7 @@ export class CollabSpliter extends StateLitElement {
         });
     }
 
-    private _convertTouch(ev: TouchEvent): MouseEvent {
+    private _convertTouch(ev: TouchEvent): MouseEvent | undefined {
         const t = ev.changedTouches[0];
         const map: Record<string, string> = { touchstart: 'mousedown', touchend: 'mouseup', touchmove: 'mousemove' };
         const mouseEv = map[ev.type];
@@ -203,7 +204,7 @@ export class CollabSpliter extends StateLitElement {
     private _updateSizePanelsOnSplitChange(lw: number, rw: number) {
         const { height, top, left } = this.msizeObj;
         const newLeft = +left + this._separatorWidth + lw;
-        const level = this.getAttribute('level') || '7';
+        const level = +(this.getAttribute('level') || '7');
         const fsByLevel = this._fullScreenData[level];
 
         if (fsByLevel === 'left' && rw !== 0) { this._fullScreenData[level] = ''; this._setMSplitFullScreen(); }
@@ -215,8 +216,10 @@ export class CollabSpliter extends StateLitElement {
 
     private _setDefaultValues(msize: string) {
         if (!msize) return;
-        const level = this.getAttribute('level') || '7';
-        const [width, , top, leftP] = this.getAttribute('msize').split(',');
+        const level = +(this.getAttribute('level') || '7');
+        const currentMsize = this.getAttribute('msize');
+        if (!currentMsize) return;
+        const [width, , top, leftP] = currentMsize.split(',');
         const totalW = parseFloat(width) - this._separatorWidth;
         const { left, right } = this._getDefaultPxByPercent(totalW);
 
@@ -252,7 +255,7 @@ export class CollabSpliter extends StateLitElement {
         if (!msize && !beforeRender) return;
         if (!beforeRender) this._setDefaultValues(msize);
 
-        const level = this.getAttribute('level') || '7';
+        const level = +(this.getAttribute('level') || '7');
         const fsByLevel = this._fullScreenData[level];
         const usermsplit = localStorage.getItem('user-msplit');
         let leftPx: any, rightPx: any;
@@ -301,7 +304,7 @@ export class CollabSpliter extends StateLitElement {
     }
 
     private _savePreferencesByLevel(msplit: string) {
-        const level = this.getAttribute('level') || 7;
+        const level = +(this.getAttribute('level') || '7');
         const fsByLevel = this._fullScreenData[level];
         if (fsByLevel === 'left' || fsByLevel === 'right') return;
         const [wL, wR] = msplit.split(',');

@@ -1,62 +1,64 @@
 /// <mls fileReference="_102041_/l2/collab-nav-3-menu-tools-link.less" enhancement="_102020_/l2/enhancementStyleAura.ts"/>
 
-collab-nav-3-menu-tools-link.list {
-    svg, i {
-        margin-right: .3rem;
-    }
-}
-
-collab-nav-3-menu-tools-link:not(.list) {
-    background-color: var(--collab-nav-bg-1);
-    color: var(--collab-text-primary-color);
-    box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 2px 2px;
-    border-radius: 25%;
-    width: 30px;
-    height: 25px;
-    font-size: 14px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    position: relative;
-    user-select: none;
-    transition: background-color 0.3s ease;
-
-    svg {
-        width: 12px;
-        height: 12px;
-    }
-
-    &:hover {
-        background-color: var(--collab-nav-bg-3);
-        .icon-link {
-            animation: diagonal-move 0.3s ease forwards;
+collab-nav-3-menu-tools-link {
+    &.list {
+        svg, i {
+            margin-right: .3rem;
         }
     }
 
-    span {
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        display: flex !important;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .icon-link {
-        display: block;
-        font-size: 10px;
-        position: absolute;
-        top: -5px;
-        right: -3px;
-        font-weight: bold;
+    &:not(.list) {
         background-color: var(--collab-nav-bg-1);
         color: var(--collab-text-primary-color);
-        transition: transform 0.3s ease;
-    }
+        box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 2px 2px;
+        border-radius: 25%;
+        width: 30px;
+        height: 25px;
+        font-size: 14px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        position: relative;
+        user-select: none;
+        transition: background-color 0.3s ease;
 
-    @keyframes diagonal-move {
-        0% { transform: translate(0, 0); }
-        100% { transform: translate(2px, -2px); }
+        svg {
+            width: 12px;
+            height: 12px;
+        }
+
+        &:hover {
+            background-color: var(--collab-nav-bg-3);
+            .icon-link {
+                animation: diagonal-move 0.3s ease forwards;
+            }
+        }
+
+        span {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            display: flex !important;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .icon-link {
+            display: block;
+            font-size: 10px;
+            position: absolute;
+            top: -5px;
+            right: -3px;
+            font-weight: bold;
+            background-color: var(--collab-nav-bg-1);
+            color: var(--collab-text-primary-color);
+            transition: transform 0.3s ease;
+        }
+
+        @keyframes diagonal-move {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(2px, -2px); }
+        }
     }
 }

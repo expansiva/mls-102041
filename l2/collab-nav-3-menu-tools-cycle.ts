@@ -1,5 +1,18 @@
 /// <mls fileReference="_102041_/l2/collab-nav-3-menu-tools-cycle.ts" enhancement="_102020_/l2/enhancementAura.ts"/>
 
+/// **collab_i18n_start**
+const message_en = {
+    actualState: 'Actual state',
+    changeTo: 'Change to',
+};
+type MessageType = typeof message_en;
+const message_pt: MessageType = {
+    actualState: 'Estado atual',
+    changeTo: 'Alterar para',
+};
+const messages: { [key: string]: MessageType } = { en: message_en, pt: message_pt };
+/// **collab_i18n_end**
+
 import { html, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
@@ -31,6 +44,8 @@ export class CollabNav3MenuToolsCycle extends StateLitElement {
     public onClickTools: Function;
     public tool: IToolsDataCycle;
 
+    private msg: MessageType = messages['en'];
+
     private get _tooltipEl(): any { return document.querySelector('collab-tooltip') as any; }
 
     firstUpdated() {
@@ -43,6 +58,7 @@ export class CollabNav3MenuToolsCycle extends StateLitElement {
     }
 
     render() {
+        this.msg = messages[this.getMessageKey(messages)] || messages['en'];
         if (!this.tool) return nothing;
         return this.renderType === 'menu' ? this._renderAsMenu() : this._renderAsTool();
     }
@@ -75,7 +91,7 @@ export class CollabNav3MenuToolsCycle extends StateLitElement {
                             @click=${(e: Event) => { e.stopPropagation(); this._onMenuItemClick(index); }}>
                             <div>
                                 ${this._iconTpl(opt.icon, opt.class)}
-                                <span>${index === this.selected ? 'Actual state: ' + opt.text : 'Change to: ' + opt.text}</span>
+                                <span>${index === this.selected ? this.msg.actualState + ': ' + opt.text : this.msg.changeTo + ': ' + opt.text}</span>
                             </div>
                         </li>
                     `)}

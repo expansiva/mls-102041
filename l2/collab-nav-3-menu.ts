@@ -1,5 +1,26 @@
 /// <mls fileReference="_102041_/l2/collab-nav-3-menu.ts" enhancement="_102020_/l2/enhancementAura.ts"/>
 
+/// **collab_i18n_start**
+const message_en = {
+    about: 'About',
+    aboutThisService: 'About this Service',
+    reference: 'Reference',
+    level: 'Level',
+    position: 'Position',
+    preview: 'Preview',
+};
+type MessageType = typeof message_en;
+const message_pt: MessageType = {
+    about: 'Sobre',
+    aboutThisService: 'Sobre este serviço',
+    reference: 'Referência',
+    level: 'Nível',
+    position: 'Posição',
+    preview: 'Pré-visualização',
+};
+const messages: { [key: string]: MessageType } = { en: message_en, pt: message_pt };
+/// **collab_i18n_end**
+
 import { html, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
@@ -56,8 +77,10 @@ export class CollabNav3Menu extends StateLitElement {
     @state() private _actionPage: HTMLElement | undefined;
     @state() private _tabSelected: number = 0;
     @state() private _historyTabs: { index: number; element: HTMLElement }[] = [];
-    @state() private _resizeTimeout: number = 0;
+    private _resizeTimeout: number = 0;
     @state() private _hiddenEls: Set<string> = new Set();
+
+    private msg: MessageType = messages['en'];
 
     private _menu: IServiceMenu | undefined;
     private _isInternalAboutLastOpened: boolean = false;
@@ -86,9 +109,9 @@ export class CollabNav3Menu extends StateLitElement {
     }
 
     render() {
+        this.msg = messages[this.getMessageKey(messages)] || messages['en'];
         const menu = this._getMenuOptions();
         if (!menu) return nothing;
-        const isEditorOrPage = this._menuChecked && (this._lastMode === 'editor' || this._lastMode === 'page');
 
         return html`
             <div>
@@ -184,7 +207,7 @@ export class CollabNav3Menu extends StateLitElement {
                 </li>
             `)}
             ${this.isMls2 === 'true' ? html`
-                <li><div @click=${() => this._showAbout()}>About</div></li>
+                <li><div @click=${() => this._showAbout()}>${this.msg.about}</div></li>
             ` : nothing}
             ${Object.keys(tools).length > 0 ? html`<li><hr></li>` : nothing}
             ${Object.entries(tools).map(([key, tool]) => html`
@@ -354,10 +377,10 @@ export class CollabNav3Menu extends StateLitElement {
         const serviceName = toolbarContentEl?.getAttribute('data-service') || 'Is Preview';
         const serviceLevel = toolbarEl?.getAttribute('level') || 'Is Preview';
         const servicePosition = toolbarEl?.getAttribute('toolbarposition') || 'Is Preview';
-        this._setMenuTitle(`About ${serviceName}`);
+        this._setMenuTitle(`${this.msg.about} ${serviceName}`);
         this._updateTitle();
         const div = document.createElement('div');
-        div.innerHTML = `<h3>About this Service</h3><ul><li>Reference: ${serviceName}</li><li>Level: ${serviceLevel}</li><li>Position: ${servicePosition}</li></ul>`;
+        div.innerHTML = `<h3>${this.msg.aboutThisService}</h3><ul><li>${this.msg.reference}: ${serviceName}</li><li>${this.msg.level}: ${serviceLevel}</li><li>${this.msg.position}: ${servicePosition}</li></ul>`;
         this.setMode('page', div);
         return true;
     }
@@ -391,7 +414,7 @@ export class CollabNav3Menu extends StateLitElement {
     private _defaultMenu(): IServiceMenu {
         if (this._menu) return this._menu;
         const menu: IServiceMenu = {
-            title: { text: 'Preview', icon: '' },
+            title: { text: this.msg.preview, icon: '' },
             main: {},
             tabs: undefined,
             tools: {},
