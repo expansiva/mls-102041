@@ -3,6 +3,9 @@
 import { nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { StateLitElement } from '/_102027_/l2/stateLitElement.js';
+import type { CollabNav3 } from '/_102041_/l2/collab-nav-3.js';
+import type { CollabNav2 } from '/_102041_/l2/collab-nav-2.js';
+
 
 @customElement('collab-spliter-item')
 export class CollabSpliterItem extends StateLitElement {
@@ -10,8 +13,8 @@ export class CollabSpliterItem extends StateLitElement {
     @property({ attribute: 'msize' }) msize: string = '';
 
     public layout() {
-        const nav3 = this.querySelector('collab-nav-3') as any;
-        const nav2 = this.querySelector('collab-nav-2') as any;
+        const nav3 = this.querySelector('collab-nav-3') as CollabNav3;
+        const nav2 = this.querySelector('collab-nav-2') as CollabNav2;
         if (nav3) nav3.layout();
         if (nav2) nav2.layout();
     }
@@ -33,4 +36,5 @@ export class CollabSpliterItem extends StateLitElement {
         const newTop = (+top) + heightNav2;
         nav3.setAttribute('msize', [width, newHeight.toFixed(2), newTop.toFixed(2), left].join(','));
     }
+
 }

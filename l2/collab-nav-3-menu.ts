@@ -38,7 +38,7 @@ interface ITabs { type?: 'full' | 'onlyicon'; effect?: string; mode?: 'normal' |
 interface IMain { [key: string]: IOptions | string; }
 interface ITools { [key: string]: IToolsData; }
 
-interface IServiceMenu {
+export interface IServiceMenu {
     title: IOptions | string;
     main?: IMain;
     tabs?: ITabs;
@@ -195,6 +195,8 @@ export class CollabNav3Menu extends StateLitElement {
         const tools = menu.tools || {};
         const tabs = menu.tabs;
 
+        if (!tabs) return html`${nothing}`
+
         return html`
             ${Object.entries(main).map(([key, data]) => html`
                 <li>
@@ -213,10 +215,10 @@ export class CollabNav3Menu extends StateLitElement {
             ${Object.entries(tools).map(([key, tool]) => html`
                 <li>${this._renderTool(key, tool, 'menu')}</li>
             `)}
-            ${tabs?.options?.length > 0 ? html`
+            ${tabs?.options?.length || 0 > 0 ? html`
                 <li><hr></li>
                 <li class=${classMap({ 'with-drop': true })}>
-                    <div @click=${(e: Event) => { e.preventDefault(); (e.currentTarget as HTMLElement).closest('li').classList.toggle('opened'); }}>
+                    <div @click=${(e: Event) => { e.preventDefault(); (e.currentTarget as HTMLElement).closest('li')?.classList.toggle('opened'); }}>
                         ${tabs.group || ''}: ${tabs.options[tabs.selected || 0]?.text}
                         <ul class="sub-menu">
                             ${tabs.options.map((item, index) => html`
@@ -275,7 +277,7 @@ export class CollabNav3Menu extends StateLitElement {
             const menu = this._getMenuOptions();
             if (menu?.tabs) menu.tabs.selected = prev.index;
             const onNav = menu?.onClickTabsNavigation;
-            if (onNav) onNav(prev.index, actual.element, prev.element);
+            if (onNav && actual) onNav(prev.index, actual.element, prev.element);
         }
     };
 
@@ -370,7 +372,8 @@ export class CollabNav3Menu extends StateLitElement {
 
     private _showAbout(): boolean {
         const menu = this._getMenuOptions();
-        this._lastTitle = typeof menu.title === 'string' ? menu.title : (menu.title as IOptions).text;
+
+        this._lastTitle = menu ? typeof menu.title === 'string' ? menu.title : (menu.title as IOptions).text : '';
         this._isInternalAboutLastOpened = true;
         const toolbarContentEl = this.closest('collab-nav-3-service');
         const toolbarEl = this.closest('collab-nav-3');
@@ -401,7 +404,7 @@ export class CollabNav3Menu extends StateLitElement {
         if (this._menu) return this._menu;
         const parent = this.parentElement as HTMLElement;
         if (!parent) return this._defaultMenu();
-        const widget = parent['mlsWidget'] as any;
+        const widget = (parent as any)['mlsWidget'] as any;
         if (!widget) return this._defaultMenu();
         const menu = widget['menu'] as IServiceMenu;
         if (!menu || typeof menu !== 'object') return this._defaultMenu();
@@ -464,7 +467,7 @@ export class CollabNav3Menu extends StateLitElement {
         this._hiddenEls = next;
     }
 
-    private _iconTpl(str: string, className: string, extraClass = '') {
+    private _iconTpl(str?: string, className?: string, extraClass = '') {
         const cls = [className || '', extraClass].filter(Boolean).join(' ');
         if (!str) return html`<i class="${cls}"></i>`;
         if (str.trim().startsWith('<svg')) return html`<span class="${cls}">${unsafeHTML(str)}</span>`;

@@ -41,8 +41,8 @@ export class CollabNav3MenuToolsCycle extends StateLitElement {
     @property({ attribute: 'rendertype' }) renderType: string = '';
     @state() private _menuOpened: boolean = false;
 
-    public onClickTools: Function;
-    public tool: IToolsDataCycle;
+    public onClickTools?: Function;
+    public tool?: IToolsDataCycle;
 
     private msg: MessageType = messages['en'];
 
@@ -64,7 +64,7 @@ export class CollabNav3MenuToolsCycle extends StateLitElement {
     }
 
     private _renderAsTool() {
-        const option = this.tool.options[this.selected];
+        const option = this.tool?.options[this.selected];
         if (!option) return nothing;
         return html`
             <span data-key="${this.key}" data-tooltip="${option.text}" @click=${this._onToolClick}>
@@ -74,7 +74,7 @@ export class CollabNav3MenuToolsCycle extends StateLitElement {
     }
 
     private _renderAsMenu() {
-        const option = this.tool.options[this.selected];
+        const option = this.tool?.options[this.selected];
         if (!option) return nothing;
         return html`
             <div data-key="${this.key}"
@@ -86,7 +86,7 @@ export class CollabNav3MenuToolsCycle extends StateLitElement {
                     <span>: ${option.text}</span>
                 </div>
                 <ul class="sub-menu">
-                    ${this.tool.options.map((opt, index) => html`
+                    ${this.tool?.options.map((opt, index) => html`
                         <li class=${classMap({ selected: index === this.selected })}
                             @click=${(e: Event) => { e.stopPropagation(); this._onMenuItemClick(index); }}>
                             <div>
@@ -101,6 +101,7 @@ export class CollabNav3MenuToolsCycle extends StateLitElement {
     }
 
     private _onToolClick = () => {
+        if (!this.tool) return;
         const nextIndex = (this.selected + 1) % this.tool.options.length;
         this.selected = nextIndex;
         this.tool.selected = nextIndex;
@@ -114,6 +115,7 @@ export class CollabNav3MenuToolsCycle extends StateLitElement {
     };
 
     private _onMenuItemClick(index: number) {
+        if (!this.tool) return;
         const similar = this._findToolbarCounterpart();
         if (similar) similar.setAttribute('selected', index.toString());
         this.selected = index;
@@ -131,13 +133,13 @@ export class CollabNav3MenuToolsCycle extends StateLitElement {
         }
     }
 
-    private _findToolbarCounterpart(): Element | undefined {
+    private _findToolbarCounterpart(): Element | undefined | null {
         return this.closest('collab-nav-3-menu')
             ?.querySelector('.tools')
             ?.querySelector(`collab-nav-3-menu-tools-cycle[key="${this.key}"]`);
     }
 
-    private _iconTpl(str: string, className: string) {
+    private _iconTpl(str?: string, className?: string) {
         const cls = className || '';
         if (!str) return html`<i class="${cls}"></i>`;
         if (str.trim().startsWith('<svg')) return html`<span class="${cls}">${unsafeHTML(str)}</span>`;

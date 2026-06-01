@@ -23,8 +23,8 @@ export class CollabNav3MenuToolsLink extends StateLitElement {
     @property({ attribute: 'key' }) key: string = '';
     @property({ attribute: 'rendertype' }) renderType: string = '';
 
-    public onClickTools: Function;
-    public tool: IToolsLinkData;
+    public onClickTools?: Function;
+    public tool?: IToolsLinkData;
 
     private get _tooltipEl(): any { return document.querySelector('collab-tooltip') as any; }
 
@@ -69,7 +69,7 @@ export class CollabNav3MenuToolsLink extends StateLitElement {
         this.onClickTools(this.key);
     };
 
-    private _iconTpl(str: string, className: string) {
+    private _iconTpl(str?: string, className?: string) {
         const cls = className || '';
         if (!str) return html`<i class="${cls}"></i>`;
         if (str.trim().startsWith('<svg')) return html`<span class="${cls}">${unsafeHTML(str)}</span>`;

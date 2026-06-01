@@ -28,9 +28,10 @@ export class CollabSpliter extends StateLitElement {
         return { width: parseFloat(w), height: parseFloat(h), top: parseFloat(t), left: parseFloat(l) };
     }
 
-    private _leftPanel: ICollabSpliterItem;
-    private _rightPanel: ICollabSpliterItem;
-    private _resizerSplitter: HTMLElement;
+    private _leftPanel?: ICollabSpliterItem;
+    private _rightPanel?: ICollabSpliterItem;
+    private _resizerSplitter?: HTMLElement;
+
     private readonly _separatorWidth = 8;
     private readonly _defaultPx = 375;
     private _defaultPanelsWidth = { rightPanel: 0, leftPanel: 0 };
@@ -86,6 +87,7 @@ export class CollabSpliter extends StateLitElement {
         let isMobile = false;
 
         const resize = (event: MouseEvent) => {
+            if (!this._leftPanel || !this._rightPanel) return;
             this._toogleIframePointerEvents(false);
             document.querySelectorAll('iframe').forEach(f => f.style.pointerEvents = 'none');
             if (isMobile && !lastPageX) { lastPageX = event.pageX; return; }
@@ -129,6 +131,7 @@ export class CollabSpliter extends StateLitElement {
         };
 
         const onMouseUp = () => {
+            if (!this._leftPanel || !this._rightPanel) return;
             lastPageX = 0; isMobile = false;
             document.querySelectorAll('iframe').forEach(f => f.style.pointerEvents = 'all');
             this._toogleIframePointerEvents(true);
@@ -162,6 +165,7 @@ export class CollabSpliter extends StateLitElement {
         };
 
         this._resizerSplitter.ondblclick = () => {
+            if (!this._leftPanel || !this._rightPanel) return;
             const level = +(this.getAttribute('level') || '7');
             if (this._fullScreenData[level]) {
                 this._fullScreenData[level] = '';
@@ -192,6 +196,7 @@ export class CollabSpliter extends StateLitElement {
     }
 
     private _toogleDefaultWidth() {
+        if (!this._leftPanel || !this._rightPanel) return;
         this._leftPanel.style.width = this._defaultPanelsWidth.leftPanel + 'px';
         this._rightPanel.style.width = this._defaultPanelsWidth.rightPanel + 'px';
         this.setAttribute('msplit', `${this._defaultPanelsWidth.leftPanel.toFixed(2)},${this._defaultPanelsWidth.rightPanel.toFixed(2)}`);
@@ -210,12 +215,14 @@ export class CollabSpliter extends StateLitElement {
         if (fsByLevel === 'left' && rw !== 0) { this._fullScreenData[level] = ''; this._setMSplitFullScreen(); }
         else if (fsByLevel === 'right' && lw !== 0) { this._fullScreenData[level] = ''; this._setMSplitFullScreen(); }
 
+        if (!this._leftPanel || !this._rightPanel) return;
         this._leftPanel.setAttribute('msize', `${lw},${height},${top},0`);
         this._rightPanel.setAttribute('msize', `${rw},${height},${top},${newLeft}`);
     }
 
     private _setDefaultValues(msize: string) {
-        if (!msize) return;
+
+        if (!msize || !this._leftPanel || !this._rightPanel) return;
         const level = +(this.getAttribute('level') || '7');
         const currentMsize = this.getAttribute('msize');
         if (!currentMsize) return;
@@ -245,13 +252,14 @@ export class CollabSpliter extends StateLitElement {
         };
     }
 
-    private _updateSizePanels(msize: string) {
+    private _updateSizePanels(msize: string | null) {
         if (!msize || !this._leftPanel) return;
         this._loadUserPreferenceByLevel(msize);
         this.style.height = this.msizeObj.height + 'px';
     }
 
-    private _loadUserPreferenceByLevel(msize: string, beforeRender = false) {
+    private _loadUserPreferenceByLevel(msize?: string | null, beforeRender = false) {
+        if (!msize || !this._leftPanel || !this._rightPanel) return;
         if (!msize && !beforeRender) return;
         if (!beforeRender) this._setDefaultValues(msize);
 

@@ -62,7 +62,7 @@ export class CollabNav1 extends StateLitElement {
     private _currentLang: string = 'en';
 
     public services: IServicesByProjectConfig = { services: [] };
-    public actualServices: INav1CollabServiceData;
+    public actualServices?: INav1CollabServiceData;
     public reasons: {} = {};
 
     @state() private _items: ICollabNav1Level[] = this._defaultJson();
@@ -118,11 +118,11 @@ export class CollabNav1 extends StateLitElement {
         return html`
             <nav class="fa">
                 ${this._items.map((item, idx) => {
-                    const tabI = this._items.slice(0, idx).filter(i => i.mode !== 'notification').length;
-                    if (item.mode === 'notification') return this._renderNotification(item);
-                    if (item.mode === 'user') return this._renderUser(item, tabI);
-                    return this._renderTab(item, tabI);
-                })}
+            const tabI = this._items.slice(0, idx).filter(i => i.mode !== 'notification').length;
+            if (item.mode === 'notification') return this._renderNotification(item);
+            if (item.mode === 'user') return this._renderUser(item, tabI);
+            return this._renderTab(item, tabI);
+        })}
             </nav>
         `;
     }
@@ -172,8 +172,8 @@ export class CollabNav1 extends StateLitElement {
                     </div>
                 ` : nothing}
                 ${this._userAvatarSrc
-                    ? html`<img class="avatar" src="${this._userAvatarSrc}" alt="user avatar">`
-                    : html`${unsafeHTML(item.icon)} ${item.text}`}
+                ? html`<img class="avatar" src="${this._userAvatarSrc}" alt="user avatar">`
+                : html`${unsafeHTML(item.icon)} ${item.text}`}
             </nav-1-item>
         `;
     }
@@ -230,7 +230,7 @@ export class CollabNav1 extends StateLitElement {
 
     private _activeMe(idx: number) {
         const tabItems = this._items.filter(i => i.mode !== 'notification');
-        let lastLevel: number;
+        let lastLevel: number = -1;
         const act = this.querySelector('nav-1-item.active');
         if (act) {
             const lvl = act.getAttribute('level');
@@ -337,8 +337,13 @@ export class CollabNav1 extends StateLitElement {
                     const { path, project } = mls?.actual?.[0] || {};
                     const driver = (mls?.l5?.getProjectSettings?.(project) as any)?.projectDriver;
                     if (!this._servicesDetailsArr[service.widget]) {
-                        if (this._staticService.includes(service.widget)) servicesDetails.push({ details: this._getDetailsServiceStaticMls1(service.widget) });
-                        else if (!driver) servicesDetails.push({ details: this._getDetailsServiceMls1(service.widget) });
+                        if (this._staticService.includes(service.widget)) {
+                            const _det = this._getDetailsServiceStaticMls1(service.widget);
+                            if (_det) servicesDetails.push({ details: _det });
+                        } else if (!driver) {
+                            const _det = this._getDetailsServiceMls1(service.widget);
+                            if (_det) servicesDetails.push({ details: _det });
+                        }
                         else servicesPromises.push(this._getDetailsServiceCollabInJS3(level, position, project, path));
                         this._servicesDetailsArr[service.widget] = {};
                     }
@@ -373,7 +378,7 @@ export class CollabNav1 extends StateLitElement {
                         const typeConfig = ('left' in cfg || 'right' in cfg) ? 'byPosition' : 'byPlace';
                         const obj = typeConfig === 'byPlace' ? cfg : cfg[position];
                         if (obj?.show === false) return;
-                        if (obj) Object.keys(obj).forEach(key => { service[key] = obj[key]; });
+                        if (obj) Object.keys(obj).forEach(key => { (service as Record<string, any>) = obj[key]; });
                     }
                 });
             });
@@ -405,7 +410,7 @@ export class CollabNav1 extends StateLitElement {
         return this._cacheKeysPromise;
     }
 
-    private async _getDetailsServiceCollabInJS3(level: string, position: string, project: number, path: string): Promise<{ details: INav1Service }> {
+    private async _getDetailsServiceCollabInJS3(level: string, position: string, project: number, path: string): Promise<{ details: INav1Service | undefined }> {
         const target = `/_${project}_${path}.js`;
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 8000);
@@ -455,13 +460,14 @@ export class CollabNav1 extends StateLitElement {
         const parsedPrefs = this._prepareJSONServiceData(userPreferences);
 
         Object.entries(parsedConfig).forEach(([key, value]: [string, any]) => {
-            if (value.left.length === 1 && value.left[0] === '*') parsedPrefs[key].left = [staticStart];
+            const _key = Number.parseInt(key);
+            if (value.left.length === 1 && value.left[0] === '*') parsedPrefs[_key].left = [staticStart];
             else if (value.left.length > 0) {
-                parsedPrefs[key].left = [staticStart, ...value.left.map((w: string) => ({ icon: '', isStatic: false, state: 'foreground', tooltip: '', visible: true, widget: w }))];
+                parsedPrefs[_key].left = [staticStart, ...value.left.map((w: string) => ({ icon: '', isStatic: false, state: 'foreground', tooltip: '', visible: true, widget: w }))];
             }
-            if (value.right.length === 1 && value.right[0] === '*') parsedPrefs[key].right = [];
+            if (value.right.length === 1 && value.right[0] === '*') parsedPrefs[_key].right = [];
             else if (value.right.length > 0) {
-                parsedPrefs[key].right = value.right.map((w: string) => ({ icon: '', isStatic: false, state: 'foreground', tooltip: '', visible: true, widget: w }));
+                parsedPrefs[_key].right = value.right.map((w: string) => ({ icon: '', isStatic: false, state: 'foreground', tooltip: '', visible: true, widget: w }));
             }
         });
         return parsedPrefs;
@@ -473,11 +479,11 @@ export class CollabNav1 extends StateLitElement {
         services.forEach(s => {
             s.places.forEach((p: any) => {
                 const d: INav1CollabService3 = { icon: '', state: p.state, tooltip: '', visible: true, widget: s.widget, isStatic: false };
-                while (obj[p.level][p.position].length <= p.index) obj[p.level][p.position].push(undefined);
-                obj[p.level][p.position][p.index] = d;
+                while ((obj as any)[p.level][p.position].length <= p.index) (obj as any)[p.level][p.position].push(undefined);
+                (obj as any)[p.level][p.position][p.index] = d;
             });
         });
-        Object.keys(obj).forEach(l => { Object.keys(obj[l]).forEach(p => { obj[l][p] = obj[l][p].filter((i: any) => i !== undefined); }); });
+        Object.keys(obj).forEach(l => { Object.keys((obj as any)[l]).forEach(p => { (obj as any)[l][p] = (obj as any)[l][p].filter((i: any) => i !== undefined); }); });
         return obj;
     }
 

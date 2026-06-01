@@ -4,19 +4,19 @@ import { html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { StateLitElement } from '/_102027_/l2/stateLitElement.js';
 
-import './collab-tooltip';
-import './collab-sticky-notification';
-import './collab-page';
-import './collab-spliter';
-import './collab-spliter-item';
-import './collab-nav-1';
-import './collab-nav-2';
-import './collab-nav-3';
-import './collab-nav-3-menu';
-import './collab-nav-3-menu-tools-link';
-import './collab-nav-3-menu-tools-cycle';
-import './collab-nav-3-menu-tools-dropdown';
-import './collab-nav-3-menu-tools-tree-dropdown';
+import '/_102041_/l2/collab-tooltip.js';
+import '/_102041_/l2/collab-sticky-notification.js';
+import '/_102041_/l2/collab-page.js';
+import '/_102041_/l2/collab-spliter.js';
+import '/_102041_/l2/collab-spliter-item.js';
+import '/_102041_/l2/collab-nav-1.js';
+import '/_102041_/l2/collab-nav-2.js';
+import '/_102041_/l2/collab-nav-3.js';
+import '/_102041_/l2/collab-nav-3-menu.js';
+import '/_102041_/l2/collab-nav-3-menu-tools-link.js';
+import '/_102041_/l2/collab-nav-3-menu-tools-cycle.js';
+import '/_102041_/l2/collab-nav-3-menu-tools-dropdown.js';
+import '/_102041_/l2/collab-nav-3-menu-tools-tree-dropdown.js';
 
 @customElement('collab-index')
 export class CollabIndex extends StateLitElement {

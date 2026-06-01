@@ -42,7 +42,7 @@ export class CollabNav3 extends StateLitElement {
 
     private msg: MessageType = messages['en'];
 
-    public args: Record<string, string>;
+    public args?: Record<string, string>;
 
     public getActiveInstance(position: 'left' | 'right') {
         const page = this.closest('collab-page');
@@ -67,7 +67,7 @@ export class CollabNav3 extends StateLitElement {
     }
 
     private _state: INav3State = { left: {}, right: {} };
-    private _lastLevel: number;
+    private _lastLevel: number | undefined;
     private _alreadyDefined: boolean = false;
     private _loadings: Record<string, HTMLElement> = {};
     private _errors: Record<string, HTMLElement> = {};
@@ -143,7 +143,6 @@ export class CollabNav3 extends StateLitElement {
     }
 
     private async _showService(service: string) {
-        if (window['traceLifecycle']) console.info(`showing: service: ${service} position: ${this.position} level: ${this.level}`);
         this._hideAll();
         if (!service) { this._setAllVisibleFalse(service); return; }
         if (!this._state[this.position][service]) {
@@ -200,8 +199,8 @@ export class CollabNav3 extends StateLitElement {
         else this._instanceMlsService(service, content, exec, level);
     }
 
-    private async _instanceCollabService(service: string, content: HTMLElement, exec: boolean, level: number) {
-        if (window['traceLifecycle']) console.info(`instantiating: collabService: ${service} position: ${this.position} level: ${this.level}`);
+    private async _instanceCollabService(service: string, content: HTMLElement, exec: boolean, level?: number) {
+
         const mls = (window as any).mls;
         mls?.actual?.[0]?.setFullName(service);
         const { project, path } = mls?.actual?.[0] || {};
@@ -239,8 +238,8 @@ export class CollabNav3 extends StateLitElement {
     private _createToolbarService(content: HTMLElement, instance?: HTMLElement) {
         if (instance) (content as any)['mlsWidget'] = instance;
         let menu: HTMLElement;
-        if (instance?.['menu'] && 'main' in instance['menu']) {
-            if (instance['menu'].enabled === false) return;
+        if ((instance as any)?.['menu'] && 'main' in (instance as any)['menu']) {
+            if ((instance as any)['menu'].enabled === false) return;
             menu = document.createElement('collab-nav-3-menu');
         } else menu = document.createElement('mls-nav3-100529');
         menu.setAttribute('is-mls2', 'true');
@@ -249,8 +248,7 @@ export class CollabNav3 extends StateLitElement {
         else content.appendChild(menu);
     }
 
-    private _instanceMlsService(service: string, content: HTMLElement, exec: boolean, level: number) {
-        if (window['traceLifecycle']) console.info(`instantiating: mlsService: ${service} position: ${this.position} level: ${this.level}`);
+    private _instanceMlsService(service: string, content: HTMLElement, exec: boolean, level?: number) {
         const isStatic = this._isStatic(service);
         const l2 = (window as any).l2_html;
         const l4 = (window as any).l4_html;
@@ -269,8 +267,8 @@ export class CollabNav3 extends StateLitElement {
         if (!serviceInfo?.tags?.length) return [];
         const promises: Promise<void>[] = [];
         Object.keys(this.actualServices[+this.level]).forEach(pos => {
-            this.actualServices[+this.level][pos].forEach((s: ICollabServiceNav3) => {
-                for (const tag of serviceInfo.tags) {
+            (this.actualServices as Record<number, any>)[+this.level][pos].forEach((s: ICollabServiceNav3) => {
+                for (const tag of serviceInfo.tags || []) {
                     if (s.tags?.includes(tag)) {
                         promises.push(this._instancieTagService(pos, s));
                         break;
@@ -318,7 +316,7 @@ export class CollabNav3 extends StateLitElement {
         if (this.status === 'enabled') this._init();
     }
 
-    private _layout(value: string) {
+    private _layout(value: string | undefined | null) {
         if (!value) return;
         const activeService = this.querySelector(`collab-nav-3-service[data-service="${this.getAttribute('data-service')}"]`) as HTMLElement;
         if (!activeService) return;
@@ -333,7 +331,7 @@ export class CollabNav3 extends StateLitElement {
         const newTop = +top + mHeightMenu;
         const msize = [width, newHeight.toFixed(2), newTop.toFixed(2), left].join(',');
         const msizeMenu = [width, mHeightMenu, newTop.toFixed(2), left].join(',');
-        let service = children.find(c => c.tagName.startsWith('SERVICE-'));
+        let service: Element | undefined | null = children.find(c => c.tagName.startsWith('SERVICE-'));
         const isServiceStart = activeService.querySelector('div[data-service="_100529_service_start"]') as HTMLElement;
         if (isServiceStart) {
             isServiceStart.style.height = newHeight.toFixed(2) + 'px';
@@ -352,7 +350,7 @@ export class CollabNav3 extends StateLitElement {
         Array.from(activeService.children).forEach(el => {
             const element = el as HTMLElement;
             if (!element.tagName.toLowerCase().startsWith('mls-')) return;
-            let newHeight: string;
+            let newHeight: string = '';
             if (mHeigth) newHeight = (parseFloat(height) - parseFloat(mHeigth)).toString();
             const isVisible = element.style.display !== 'none';
             const elMHeight = isVisible ? element.getAttribute('mheight') : '0';
@@ -367,6 +365,7 @@ export class CollabNav3 extends StateLitElement {
         const container = this._getBindService();
         if (!container) return;
         const ds = container.getAttribute('data-service');
+        if (!ds) return;
         if (this._loadings[ds]) this._loadings[ds].remove();
         this._loadings[ds] = document.createElement('collab-loading');
         this._loadings[ds].classList.add('toolbar-loading');
@@ -377,6 +376,7 @@ export class CollabNav3 extends StateLitElement {
         const container = this._getBindService();
         if (!container) return;
         const ds = container.getAttribute('data-service');
+        if (!ds) return;
         if (this._loadings[ds]) this._loadings[ds].remove();
         this.removeAttribute('loadingfeedback');
     }
@@ -385,6 +385,8 @@ export class CollabNav3 extends StateLitElement {
         const container = this._getBindService();
         if (!container) return;
         const ds = container.getAttribute('data-service');
+        if (!ds) return;
+
         const span = this._loadings[ds]?.querySelector('span');
         if (span) span.innerHTML = msg || this.msg.loading;
     }
@@ -393,6 +395,8 @@ export class CollabNav3 extends StateLitElement {
         const container = this._getBindService();
         if (!container) return;
         const ds = container.getAttribute('data-service');
+        if (!ds) return;
+
         if (this._errors[ds]) this._errors[ds].remove();
         this._errors[ds] = document.createElement('div');
         this._errors[ds].classList.add('toolbar-error');
@@ -410,6 +414,7 @@ export class CollabNav3 extends StateLitElement {
         const container = this._getBindService();
         if (!container) return;
         const ds = container.getAttribute('data-service');
+        if (!ds) return;
         if (this._errors[ds]) this._errors[ds].remove();
     }
 

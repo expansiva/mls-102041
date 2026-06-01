@@ -33,7 +33,6 @@ export class CollabPage extends StateLitElement {
         setTimeout(() => this._updateSizeAttr(), 500);
         this._updateSizeAttr();
         if ('ontouchstart' in window || navigator.maxTouchPoints > 0) this.setAttribute('ismobile', 'true');
-        if (!window['collab']) window['collab'] = {};
     }
 
     render() { return nothing; }
