@@ -1,0 +1,163 @@
+/// <mls fileReference="_102041_/l2/collab-nav-3-menu-tools-dropdown.less" enhancement="_102020_/l2/enhancementStyleAura.ts"/>
+
+collab-nav-3-menu-tools-dropdown.list {
+    > div {
+        .sub-menu {
+            display: none;
+        }
+
+        .dropdown-list-header {
+            display: flex;
+            gap: .3rem;
+            padding: 0.3rem 0rem;
+            align-items: center;
+
+            &::before {
+                position: absolute;
+                content: '\f054';
+                font-family: 'Font Awesome 6 Free';
+                font-weight: 900;
+                right: 10px;
+                font-size: 10px;
+                top: 10px;
+            }
+        }
+    }
+
+    > div.opened {
+        .sub-menu {
+            display: block;
+
+            li > div {
+                display: flex;
+                gap: .3rem;
+                position: relative;
+            }
+
+            li.selected::before {
+                position: absolute;
+                content: '\f00c';
+                font-family: 'Font Awesome 6 Free';
+                font-weight: 900;
+                left: 3px;
+                font-size: 10px;
+                top: 10px;
+            }
+        }
+
+        .dropdown-list-header::before {
+            content: '\f078';
+        }
+    }
+}
+
+collab-nav-3-menu-tools-dropdown:not(.list) {
+    background-color: var(--collab-nav-bg-1);
+    color: var(--collab-text-primary-color);
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 2px 2px;
+    border-radius: 15%;
+    width: 40px;
+    height: 25px;
+    font-size: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+        background-color: var(--collab-nav-bg-3);
+    }
+
+    .icon-drop {
+        font-size: 10px;
+        margin-left: .2rem;
+    }
+
+    .icon-menu > svg {
+        width: 12px;
+        height: 12px;
+    }
+
+    > span {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        display: flex !important;
+        justify-content: center;
+        align-items: center;
+    }
+
+    span .btn-menu {
+        border: 1px solid #c3c3c3;
+        position: absolute;
+        display: none;
+        top: 30px;
+        right: -5px;
+        font-size: 14px;
+        font-weight: 400;
+        background-color: var(--collab-nav-bg-1);
+        color: var(--collab-text-primary-color);
+        border-radius: 6px;
+        margin-top: 5px;
+        z-index: 9999;
+    }
+
+    span .btn-menu::before {
+        position: absolute;
+        display: inline-block;
+        top: -14px;
+        right: 9px;
+        left: auto;
+        border: 7px solid transparent;
+        border-bottom: 7px solid #c3c3c3;
+        content: "";
+    }
+
+    span .btn-menu.open {
+        display: block;
+    }
+
+    span .btn-menu ul {
+        list-style: none;
+        padding-inline-start: 0;
+        margin-block-start: 0;
+        margin-block-end: 10px;
+    }
+
+    span .btn-menu ul li {
+        position: relative;
+        padding: 0.5rem 1rem;
+        white-space: nowrap;
+        display: flex;
+        gap: .3rem;
+    }
+
+    span .btn-menu ul li.menu-header {
+        cursor: auto;
+        text-transform: uppercase;
+        font-size: 10px;
+        border-bottom: 2px solid #c3c3c3;
+        font-weight: 100;
+        color: #737373;
+    }
+
+    span .btn-menu ul li.active {
+        background-color: var(--collab-nav-bg-3);
+        &::before {
+            position: absolute;
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            left: 3px;
+            font-size: 10px;
+            top: 10px;
+        }
+    }
+
+    span .btn-menu ul li:not(.menu-header):hover {
+        background-color: var(--collab-nav-bg-3);
+    }
+}

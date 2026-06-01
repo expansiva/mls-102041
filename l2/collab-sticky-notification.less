@@ -1,0 +1,64 @@
+/// <mls fileReference="_102041_/l2/collab-sticky-notification.less" enhancement="_102020_/l2/enhancementStyleAura.ts"/>
+
+collab-sticky-notification {
+    display: block;
+    transition: height 0.5s ease;
+    position: relative;
+    overflow: hidden;
+    height: 0;
+
+    &.open {
+        height: 50px;
+    }
+
+    &.information {
+        background-color: #c5c9e6;
+        .text-message, .icon-type {
+            color: #007bff !important;
+        }
+    }
+
+    &.error {
+        background-color: #f1d9d9;
+        .text-message, .icon-type {
+            color: #dc3545 !important;
+        }
+    }
+
+    &.alert {
+        background-color: #e8ddbd59;
+        .text-message, .icon-type {
+            color: #ffc107 !important;
+        }
+    }
+
+    > div {
+        display: flex;
+        height: 100%;
+        gap: 1rem;
+        align-items: center;
+        padding: 0 0.5rem;
+
+        .text-message {
+            font-size: 18px;
+            font-weight: bold;
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    }
+
+    .close-icon {
+        cursor: pointer;
+    }
+
+    .controllers {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        i {
+            cursor: pointer;
+        }
+    }
+}

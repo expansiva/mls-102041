@@ -1,0 +1,35 @@
+/// <mls fileReference="_102041_/l2/collab-nav-3.less" enhancement="_102020_/l2/enhancementStyleAura.ts"/>
+
+collab-nav-3 {
+    display: block;
+    width: 100%;
+    height: calc(100% - 36px);
+
+    collab-nav-3-service {
+        height: 100%;
+        position: relative;
+    }
+
+    .toolbar-error {
+        position: absolute;
+        top: 40px;
+        padding: 15px;
+        background-color: #f8d7da;
+        color: #721c24;
+        width: calc(100% - 30px);
+        z-index: 4000;
+
+        span {
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
+        i {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            cursor: pointer;
+            z-index: 4000;
+        }
+    }
+}

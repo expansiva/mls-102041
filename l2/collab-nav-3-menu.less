@@ -1,0 +1,93 @@
+/// <mls fileReference="_102041_/l2/collab-nav-3-menu.less" enhancement="_102020_/l2/enhancementStyleAura.ts"/>
+
+collab-nav-3-menu {
+    color: var(--collab-nav-color-active);
+
+    a { color: var(--collab-nav-color-active); }
+
+    .collab-nav-3-menu-action {
+        clear: both;
+        transition: max-height 0.2s ease-out;
+        height: calc(100vh - 104px);
+        overflow: auto;
+        background: var(--bg-primary-color);
+        color: var(--text-primary-color);
+    }
+
+    > div {
+        background-color: var(--collab-nav-bg-3);
+        box-shadow: 1px 1px 4px 0 rgba(0, 0, 0, 0.1);
+        width: 100%;
+        height: 40px;
+        z-index: 3;
+
+        .container.hidden { display: none; }
+
+        .container .tabs, .menu-list, .sub-menu {
+            margin: 0; padding: 0; list-style: none; overflow: hidden;
+            background-color: var(--collab-nav-bg-3);
+            box-shadow: rgba(50, 50, 93, 0.25) 0px 30px 60px -12px, rgba(0, 0, 0, 0.3) 0px 18px 36px -18px;
+
+            > li {
+                position: relative; display: block; cursor: pointer;
+                background: var(--collab-nav-bg-3); font-size: 14px;
+                > div { display: block; padding: 0.5rem 1.25rem; text-decoration: none;
+                    &:hover { background-color: var(--bg-primary-color-lighter); }
+                }
+            }
+        }
+    }
+
+    .menu-list {
+        clear: both; transition: max-height 0.2s ease-out; position: absolute;
+        width: 100%; z-index: 9999; overflow: auto !important;
+
+        li.with-drop .sub-menu { display: none; }
+        li.with-drop::before { position: absolute; content: '\f054'; font-family: 'Font Awesome 6 Free'; font-weight: 900; right: 10px; font-size: 10px; top: 10px; }
+        li.with-drop.opened .sub-menu { display: block; li > div { display: flex; gap: .3rem; } }
+        li.with-drop.opened::before { content: '\f078'; }
+        .icon-menu-list { height: 14px; width: 14px; margin-right: 0.3rem; }
+        svg { height: 14px; width: 14px; }
+    }
+
+    .container {
+        display: flex; justify-content: normal;
+        &.checked .content { display: none; }
+
+        .menu {
+            cursor: pointer; float: right; padding: 18px 20px; position: relative; user-select: none;
+            .menu-icon { background: var(--collab-nav-color-active); display: block; height: 2px; position: relative; transition: background 0.2s ease-out; width: 18px;
+                &::before, &::after { background: var(--collab-nav-color-active); content: ''; display: block; height: 100%; position: absolute; transition: all 0.2s ease-out; width: 100%; }
+                &::before { top: 5px; } &::after { top: -5px; }
+            }
+            .menu-btn { display: none;
+                &:checked ~ .menu-icon { background: transparent;
+                    &:before { top: 0; transform: rotate(-45deg); }
+                    &:after { top: 0; transform: rotate(45deg); }
+                }
+            }
+        }
+
+        .content {
+            display: flex; justify-content: space-between; flex-wrap: nowrap; flex: 1;
+
+            .title { font-size: 0.9em; font-weight: bold; display: flex; justify-content: center; align-items: center; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; flex: 1; cursor: pointer; a { text-decoration: none; } i { margin-right: 0.5rem; } }
+            .tools { display: flex; gap: 0.5rem; align-items: center; padding-right: 10px; }
+            .tabs.compact li:not(.icon-back-button) { display: none !important; }
+            .tabs {
+                margin: 0; display: flex; align-items: center; list-style: none; padding: 0 0.5rem; margin-right: 10px; white-space: nowrap;
+                li.icon-back-button { cursor: pointer; border: 1px solid #cecece; width: 30px; display: flex; align-items: center; justify-content: center; height: 30px; border-radius: 10px; svg { width: 12px; height: 12px; } }
+                li.back-button-hidden { display: none; }
+                li:not(.icon-back-button) {
+                    border-right: 1px solid #cecece; cursor: pointer; padding: 0 0.8rem; display: inline-flex; align-items: center;
+                    svg { width: 12px; height: 12px; } .icon-error { margin-left: .3rem; color: red; } .tab-title { margin-left: 0.4rem; } span { font-size: 14px; }
+                    &.active { color: var(--collab-nav-3-link-active); }
+                    &.iconclose .tab-title { display: none; }
+                    &.has-error span { color: red; }
+                }
+                &.full li.iconclose .tab-title { display: inline; }
+            }
+            .title.menu-hidden, .tools.menu-hidden, .tabs.menu-hidden { display: none; }
+        }
+    }
+}
