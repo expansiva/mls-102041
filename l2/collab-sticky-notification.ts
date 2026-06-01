@@ -19,6 +19,7 @@ const messages: { [key: string]: MessageType } = { en: message_en, pt: message_p
 
 import { html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
+import type { CollabPage } from '/_102041_/l2/collab-page.js';
 import { StateLitElement } from '/_102027_/l2/stateLitElement.js';
 
 type IMessageType = 'information' | 'alert' | 'error';
@@ -47,7 +48,7 @@ export class CollabStickyNotification extends StateLitElement {
 
     private readonly _defaultOptions: IMessageOptions = { clearOnClose: true, autoClose: false, timeToClose: 5000 };
 
-    private get _mlsPage() { return this.closest('collab-page'); }
+    private get _mlsPage(): CollabPage | null { return this.closest('collab-page'); }
 
     public add(message: string, typeMsg: IMessageType, options?: IMessageOptions) {
         const newMessage: IMessage = { text: message, type: typeMsg };
@@ -72,7 +73,7 @@ export class CollabStickyNotification extends StateLitElement {
 
         this._saveLocalStorageMessages(this._messages);
         if (this._actualOptions.autoClose) setTimeout(() => this.close(), this._actualOptions.timeToClose);
-        if (this._mlsPage) (this._mlsPage as any)['layout']();
+        if (this._mlsPage) this._mlsPage.layout();
     }
 
     public close() {
@@ -81,7 +82,7 @@ export class CollabStickyNotification extends StateLitElement {
         if (this._actualOptions.clearOnClose) this._removeMsg(this._actualIndex);
         this._actualIndex = 0;
         this._actualMessage = undefined;
-        if (this._mlsPage) (this._mlsPage as any)['layout']();
+        if (this._mlsPage) this._mlsPage.layout();
     }
 
     public show() {
@@ -91,7 +92,7 @@ export class CollabStickyNotification extends StateLitElement {
         this._isOpen = true;
         this._actualIndex = 0;
         this._actualMessage = this._messages[0];
-        if (this._mlsPage) (this._mlsPage as any)['layout']();
+        if (this._mlsPage) this._mlsPage.layout();
     }
 
     updated() {
@@ -142,13 +143,13 @@ export class CollabStickyNotification extends StateLitElement {
     }
 
     private _getLocalStorageMessages(): IMessage[] {
-        const ls = localStorage.getItem('_100529_collab_sticky_notification');
+        const ls = localStorage.getItem('collab_sticky_notification');
         if (!ls) return [];
         const parsed = JSON.parse(ls);
         return Array.isArray(parsed) ? parsed : [];
     }
 
     private _saveLocalStorageMessages(messages: IMessage[]) {
-        localStorage.setItem('_100529_collab_sticky_notification', JSON.stringify(messages));
+        localStorage.setItem('collab_sticky_notification', JSON.stringify(messages));
     }
 }

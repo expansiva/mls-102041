@@ -44,8 +44,8 @@ export class CollabNav2 extends StateLitElement {
 
     get position(): ICollabServicePosition { return (this.getAttribute('toolbarposition') as ICollabServicePosition) || 'left'; }
 
-    public actualServices: ICollabServiceData;
-    public containerItens: HTMLElement;
+    public actualServices?: ICollabServiceData;
+    public containerItens?: HTMLElement;
 
     @state() private _services: ICollabService3[] = [];
     @state() private _controllersVisible: boolean = false;
@@ -199,13 +199,12 @@ export class CollabNav2 extends StateLitElement {
         if (mls?.setActualService) mls.setActualService(service);
         if (mls?.setActualPosition) mls.setActualPosition(this.position);
         this._verifyControllers();
-        this._fireToolbarSelected(service, lastSelected);
+        this._fireToolbarSelected(service, lastSelected || '');
         this._fireSelectedChangeNav3(service);
     }
 
     private _fireToolbarSelected(to: string, from: string) {
         const params = { level: this.level, position: this.position, from, to };
-        if (window['traceLifecycle']) console.info(`firing: ToolBarSelected level:${this.level} | position: ${this.position} | service: ${to}`);
         (window as any).mls?.events?.fire([this.level], ['ToolBarSelected'], JSON.stringify(params));
     }
 
@@ -297,10 +296,11 @@ export class CollabNav2 extends StateLitElement {
         const START = '_100529_service_start';
         const s: ICollabState = { ...this.state_, 7: { left: '', right: '' } };
         for (const key in this.actualServices) {
-            const svc = this.actualServices[key];
+            const _key = Number.parseInt(key)
+            const svc = this.actualServices[_key];
             if (key === '7') s[key].left = START;
-            else if (s[key].left === '' || s[key].left === START) s[key].left = svc.left[1]?.widget || START;
-            if (s[key].right === '') s[key].right = svc.right[0]?.widget;
+            else if (s[_key].left === '' || s[_key].left === START) s[_key].left = svc.left[1]?.widget || START;
+            if (s[_key].right === '') s[_key].right = svc.right[0]?.widget;
         }
         this._onlyFirstTime[this.position] = true;
         this.state_ = s;

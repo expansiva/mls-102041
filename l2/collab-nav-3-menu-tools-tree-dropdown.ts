@@ -38,8 +38,8 @@ export class CollabNav3MenuToolsTreeDropdown extends StateLitElement {
     @state() private _menuOpened: boolean = false;
     @state() private _openedItems: Set<number> = new Set();
 
-    public onClickTools: Function;
-    public tool: IToolsDataTreeDropDown;
+    public onClickTools?: Function;
+    public tool?: IToolsDataTreeDropDown;
 
     connectedCallback() {
         super.connectedCallback();
@@ -59,7 +59,7 @@ export class CollabNav3MenuToolsTreeDropdown extends StateLitElement {
     }
 
     private _renderAsTool() {
-        if (!this.tool.options) return nothing;
+        if (!this.tool?.options) return nothing;
         const iconStr = this.icon && this.icon !== 'undefined' ? this.icon : '';
         return html`
             <span data-key="${this.key}" @click=${this._onHostClick}>
@@ -110,7 +110,7 @@ export class CollabNav3MenuToolsTreeDropdown extends StateLitElement {
                     <span>${this.key.charAt(0).toUpperCase() + this.key.slice(1).toLowerCase()}</span>
                 </div>
                 <ul class="sub-menu">
-                    ${this.tool.options.map((opt, index) => html`
+                    ${this.tool?.options.map((opt, index) => html`
                         <li class=${classMap({ opened: this._openedItems.has(index) })}
                             @click=${(e: Event) => { e.stopPropagation(); this._toggleMenuItem(index); }}>
                             <div>
@@ -163,6 +163,7 @@ export class CollabNav3MenuToolsTreeDropdown extends StateLitElement {
     }
 
     private _onLeafClick(index: number) {
+        if (!this.tool) return;
         this._dropOpen = false;
         this.classList.remove('open');
         this.selected = String(index);
@@ -172,6 +173,7 @@ export class CollabNav3MenuToolsTreeDropdown extends StateLitElement {
     }
 
     private _onSubLeafClick(index: number, subIndex: number) {
+        if (!this.tool) return;
         this._dropOpen = false;
         this.classList.remove('open');
         this.selected = [index, subIndex].toString();
@@ -181,6 +183,7 @@ export class CollabNav3MenuToolsTreeDropdown extends StateLitElement {
     }
 
     private _onMenuSubItemClick(index: number, subIndex: number) {
+        if (!this.tool) return;
         this.selected = [index, subIndex].toString();
         this._menuOpened = false;
         this.tool.selected = [index, subIndex];
@@ -201,7 +204,7 @@ export class CollabNav3MenuToolsTreeDropdown extends StateLitElement {
         if (document.visibilityState === 'hidden') this._closeDropdown();
     };
 
-    private _iconTpl(str: string, className: string, extraClass: string = '') {
+    private _iconTpl(str?: string, className?: string, extraClass: string = '') {
         const cls = [className || '', extraClass].filter(Boolean).join(' ');
         if (!str) return html`<i class="${cls}"></i>`;
         if (str.trim().startsWith('<svg')) return html`<span class="${cls}">${unsafeHTML(str)}</span>`;
