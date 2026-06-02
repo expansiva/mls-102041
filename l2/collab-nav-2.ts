@@ -119,7 +119,8 @@ export class CollabNav2 extends StateLitElement {
         if (this.level === level) { this._services = [...this.actualServices[level][this.position]]; }
     }
 
-    firstUpdated() {
+    firstUpdated(changedProperties?: Map<PropertyKey, unknown>) {
+        super.firstUpdated(changedProperties);
         this.actualServices = this._staticServices;
         this._services = (this.actualServices[this.level]?.[this.position]) || [];
         this._setEvents();

@@ -74,7 +74,8 @@ export class CollabNav3 extends StateLitElement {
 
     render() { return nothing; }
 
-    firstUpdated() {
+    firstUpdated(changedProperties?: Map<PropertyKey, unknown>) {
+        super.firstUpdated(changedProperties);
         this.msg = messages[this.getMessageKey(messages)] || messages['en'];
         Promise.all(['collab-nav-2'].map(wc => customElements.whenDefined(wc))).then(() => {
             if (this.previousElementSibling) this._alreadyDefined = true;

@@ -48,8 +48,12 @@ export class CollabNav3MenuToolsCycle extends StateLitElement {
 
     private get _tooltipEl(): any { return document.querySelector('collab-tooltip') as any; }
 
-    firstUpdated() {
-        if (this.renderType === 'menu') this._syncFromToolbar();
+    firstUpdated(changedProperties?: Map<PropertyKey, unknown>) {
+        super.firstUpdated(changedProperties);
+        if (this.renderType === 'menu') {
+            this.classList.add('list');
+            this._syncFromToolbar();
+        }
     }
 
     updated() {

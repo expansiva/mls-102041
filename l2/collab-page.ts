@@ -28,7 +28,8 @@ export class CollabPage extends StateLitElement {
         window.removeEventListener('resize', this._onResize);
     }
 
-    firstUpdated() {
+    firstUpdated(changedProperties?: Map<PropertyKey, unknown>) {
+        super.firstUpdated(changedProperties);
         this._setShortCuts();
         setTimeout(() => this._updateSizeAttr(), 500);
         this._updateSizeAttr();

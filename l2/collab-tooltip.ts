@@ -13,7 +13,8 @@ export class CollabTooltip extends StateLitElement {
 
     render() { return nothing; }
 
-    firstUpdated() {
+    firstUpdated(changedProperties?: Map<PropertyKey, unknown>) {
+        super.firstUpdated(changedProperties);
         document.body.appendChild(this);
     }
 

@@ -53,6 +53,11 @@ export class CollabNav3MenuToolsTreeDropdown extends StateLitElement {
         document.removeEventListener('visibilitychange', this._onVisibilityChange);
     }
 
+    firstUpdated(changedProperties?: Map<PropertyKey, unknown>) {
+        super.firstUpdated(changedProperties);
+        if (this.renderType === 'menu') this.classList.add('list');
+    }
+
     render() {
         if (!this.tool) return nothing;
         return this.renderType === 'menu' ? this._renderAsMenu() : this._renderAsTool();

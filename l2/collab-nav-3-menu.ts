@@ -128,7 +128,8 @@ export class CollabNav3Menu extends StateLitElement {
     private _isInternalAboutLastOpened: boolean = false;
     private _lastTitle: string = '';
 
-    firstUpdated() {
+    firstUpdated(changedProperties?: Map<PropertyKey, unknown>) {
+        super.firstUpdated(changedProperties);
         this.setAttribute('mheight', '40');
         this._initMenu();
     }
