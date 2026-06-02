@@ -256,9 +256,9 @@ export class CollabNav3Menu extends StateLitElement {
                 <li><hr></li>
                 <li class=${classMap({ 'with-drop': true })}>
                     <div @click=${(e: Event) => { e.preventDefault(); (e.currentTarget as HTMLElement).closest('li')?.classList.toggle('opened'); }}>
-                        ${tabs.group || ''}: ${tabs.options[tabs.selected || 0]?.text}
+                        ${tabs?.group || ''}: ${tabs?.options[tabs.selected || 0]?.text}
                         <ul class="sub-menu">
-                            ${tabs.options.map((item, index) => html`
+                            ${tabs?.options.map((item, index) => html`
                                 <li data-key="${index}">
                                     <div @click=${(e: Event) => { e.preventDefault(); this._onTabFromMenu(index); }}>
                                         ${this._iconTpl(item.icon, item.class)}

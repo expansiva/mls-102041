@@ -248,6 +248,12 @@ export const requires: mls.l2.enhancement.IRequire[] = [
         type: "import",
         name: "tailwind.js",
         ref: "https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4",
+    },
+    {
+        type: "link",
+        name: "fontawesome",
+        ref: "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css",
+        args: "stylesheet"
     }
 ];
 
