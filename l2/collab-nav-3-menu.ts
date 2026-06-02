@@ -256,7 +256,7 @@ export class CollabNav3Menu extends StateLitElement {
             ` : nothing}
             ${Object.keys(tools).length > 0 ? html`<li><hr></li>` : nothing}
             ${Object.entries(tools).map(([key, tool]) => html`
-                <li>${this._renderTool(key, tool, 'menu')}</li>
+                <li><div>${this._renderTool(key, tool, 'menu')}</div></li>
             `)}
             ${tabs?.options?.length || 0 > 0 ? html`
                 <li><hr></li>
