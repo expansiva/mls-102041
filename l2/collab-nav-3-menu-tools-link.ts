@@ -29,7 +29,7 @@ export class CollabNav3MenuToolsLink extends StateLitElement {
 
     private get _tooltipEl(): any { return document.querySelector('collab-tooltip') as any; }
 
-    firstUpdated(changedProperties?: Map<PropertyKey, unknown>) {
+    firstUpdated(changedProperties: Map<PropertyKey, unknown>) {
         super.firstUpdated(changedProperties);
         if (this.renderType === 'menu') this.classList.add('list');
     }

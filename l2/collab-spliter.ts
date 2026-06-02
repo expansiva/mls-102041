@@ -46,7 +46,7 @@ export class CollabSpliter extends StateLitElement {
 
     render() { return nothing; }
 
-    firstUpdated(changedProperties?: Map<PropertyKey, unknown>) {
+    firstUpdated(changedProperties: Map<PropertyKey, unknown>) {
         super.firstUpdated(changedProperties);
         const [left, right] = Array.from(this.children) as ICollabSpliterItem[];
         if (!left || !right) return;

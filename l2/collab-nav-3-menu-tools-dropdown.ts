@@ -45,7 +45,7 @@ export class CollabNav3MenuToolsDropdown extends StateLitElement {
         document.removeEventListener('visibilitychange', this._onVisibilityChange);
     }
 
-    firstUpdated(changedProperties?: Map<PropertyKey, unknown>) {
+    firstUpdated(changedProperties: Map<PropertyKey, unknown>) {
         super.firstUpdated(changedProperties);
         if (this.renderType === 'menu') {
             this.classList.add('list');
@@ -89,15 +89,14 @@ export class CollabNav3MenuToolsDropdown extends StateLitElement {
 
     private _renderAsMenu() {
         const option = this.tool?.options[this.selected];
-        if (!option) return nothing;
         return html`
             <div data-key="${this.key}"
                  class=${classMap({ opened: this._menuOpened })}
                  @click=${this._onMenuHeaderClick}>
                 <div class="dropdown-list-header">
-                    ${this._iconTpl(option.icon, option.class)}
+                    ${option ? this._iconTpl(option.icon, option.class) : nothing}
                     <span>${this.key.charAt(0).toUpperCase() + this.key.slice(1).toLowerCase()}</span>
-                    <span> : ${option.text}</span>
+                    ${option ? html`<span> : ${option.text}</span>` : nothing}
                 </div>
                 <ul class="sub-menu">
                     ${this.tool?.options.map((opt, index) => html`
