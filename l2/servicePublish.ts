@@ -1,5 +1,10 @@
 /// <mls fileReference="_102041_/l2/servicePublish.ts" enhancement="_102041_/l2/enhancementCollab.ts"/>
 
+import { html, nothing } from 'lit';
+import { customElement, state } from 'lit/decorators.js';
+import { ServiceBase, IService, IToolbarContent, IServiceMenu } from '/_102027_/l2/serviceBase.js';
+import { getConfigProject } from '/_102027_/l2/libProjectConfig.js';
+
 /// **collab_i18n_start**
 const message_en = {
     title: 'Publish',
@@ -77,10 +82,6 @@ const message_pt: MessageType = {
 const messages: { [key: string]: MessageType } = { en: message_en, pt: message_pt };
 /// **collab_i18n_end**
 
-import { html, nothing } from 'lit';
-import { customElement, state } from 'lit/decorators.js';
-import { ServiceBase, IService, IToolbarContent, IServiceMenu } from '/_102027_/l2/serviceBase.js';
-import { getConfigProject } from '/_102027_/l2/libProjectConfig.js';
 
 declare function buildIndex(language: string): Promise<string>;
 
@@ -337,10 +338,10 @@ export class ServicePublish102041 extends ServiceBase {
     private async _loadLanguages() {
         this._loadingLangs = true;
         try {
-            const projectId = (window as any).mls?.actual?.[this.level]?.project;
+            const projectId = mls.actualProject;
             if (!projectId) { this._loadingLangs = false; return; }
             const config = await getConfigProject(projectId);
-            this._languages = (config as any)?.languages?.map((i: any) => i.language as string) ?? [];
+            this._languages = config?.languages?.map((i) => i.language as string) ?? [];
         } catch {
             this._languages = [];
         }
