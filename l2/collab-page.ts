@@ -1,4 +1,4 @@
-/// <mls fileReference="_102041_/l2/collab-page.ts" enhancement="_102020_/l2/enhancementAura.ts"/>
+/// <mls fileReference="_102041_/l2/collab-page.ts" enhancement="_102020_/l2/enhancementCollab.ts"/>
 
 import { nothing } from 'lit';
 import { customElement } from 'lit/decorators.js';

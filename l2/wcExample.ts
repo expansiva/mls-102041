@@ -1,4 +1,4 @@
-/// <mls fileReference="_102041_/l2/wcExample.ts" enhancement="_102020_/l2/enhancementAura.ts"/>
+/// <mls fileReference="_102041_/l2/wcExample.ts" enhancement="_102020_/l2/enhancementCollab.ts"/>
 
 import { html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
