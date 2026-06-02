@@ -2,8 +2,109 @@
 
 project-102041 {
 
-// Here your less
+    :root {
+        --collab-nav-bg-1: #ffffff;
+        --collab-nav-bg-2: #dfdfdf;
+        --collab-nav-bg-3: #f6f6f6;
+        --collab-nav-color: #767676;
+        --collab-nav-color-active: #000000;
+        --collab-nav-3-link-active: #007bff;
+        --collab-text-primary-color: #403f3f;
+        --collab-bg-primary-color: #ffffff;
+        --collab-bg-secondary-color: #E6E6E6;
+    }
 
- }
+    [data-theme="dark"] {
+        --collab-nav-bg-1: #161616;
+        --collab-nav-bg-2: #363636;
+        --collab-nav-bg-3: #565555;
+        --collab-nav-color: #888888;
+        --collab-nav-color-active: #ffffff;
+        --collab-nav-3-link-active: #a8d8ff;
+        --collab-text-primary-color: #e6edf3;
+        --collab-bg-primary-color: #0d1117;
+        --collab-bg-secondary-color: #161b22;
+    }
+
+    html,
+    body {
+        margin: 0;
+        padding: 0;
+        height: var(--vh);
+        overflow: hidden;
+    }
+
+    html {
+        font-family: 'Arvo', serif;
+        line-height: 1.15;
+        -webkit-text-size-adjust: 100%;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+        overflow: hidden;
+        margin: 0 !important;
+        font-size: 20px;
+        font-weight: 400;
+        line-height: 1.5;
+        color: var(--collab-text-primary-color);
+        background-color: var(--collab-bg-primary-color);
+        font-family: 'Cambria', serif;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        margin: 0;
+    }
+
+    ::-webkit-scrollbar {
+        width: 5px;
+        height: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background-color: #888;
+        border-radius: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background-color: #f1f1f1;
+    }
+
+    hr {
+        box-sizing: content-box;
+        height: 0;
+        overflow: visible;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        border-width: 1px 0px 0px;
+        border-top-style: solid;
+        border-top-color: rgba(0, 0, 0, 0.1);
+    }
+
+    summary {
+        cursor: pointer;
+    }
+
+    input,
+    select,
+    textarea {
+        display: block;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #495057;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        outline: none;
+    }
+
+}
 
 
