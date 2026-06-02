@@ -1,9 +1,22 @@
-/// <mls fileReference="_102041_/l2/servicePublish.less" enhancement="enhancementStyle"/>
+/// <mls fileReference="_102041_/l2/servicePublish.less" enhancement="_102041_/l2/enhancementCollabStyle.ts"/>
+
+/*
+  Mapeia [data-theme="dark"] do sistema MLS para a classe .dark do Tailwind,
+  permitindo que as variantes dark: do Tailwind funcionem corretamente.
+*/
+[data-theme="dark"] service-publish-102041,
+[data-theme="dark"] service-publish-102041 * {
+    --tw-dark: 1;
+}
 
 service-publish-102041 {
+    display: block;
+    height: 100%;
+    overflow: auto;
+    box-sizing: border-box;
+    color-scheme: light;
+}
 
-// Here your less
-
- }
-
-
+[data-theme="dark"] service-publish-102041 {
+    color-scheme: dark;
+}
