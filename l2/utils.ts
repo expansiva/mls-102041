@@ -49,9 +49,8 @@ export function convertFileToTag(info: {
 }
 
 function isNewFormat(tag: string): boolean {
-    return !/-\d+$/.test(tag);
+    return !/-\d{6}$/.test(tag);  // ✅ Só formato legado se terminar com 6+ dígitos
 }
-
 function resolveNewTag(
     tag: string,
 ): IResolvedFile | undefined {
