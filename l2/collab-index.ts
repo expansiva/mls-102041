@@ -3,7 +3,6 @@
 import { html } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { StateLitElement } from '/_102027_/l2/stateLitElement.js';
-
 import '/_102041_/l2/collab-tooltip.js';
 import '/_102041_/l2/collab-sticky-notification.js';
 import '/_102041_/l2/collab-page.js';
