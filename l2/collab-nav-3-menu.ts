@@ -238,8 +238,6 @@ export class CollabNav3Menu extends StateLitElement {
         const tools = menu.tools || {};
         const tabs = menu.tabs;
 
-        if (!tabs) return html`${nothing}`
-
         return html`
             ${Object.entries(main).map(([key, data]) => html`
                 <li>
@@ -254,10 +252,6 @@ export class CollabNav3Menu extends StateLitElement {
             ${this.isMls2 === 'true' ? html`
                 <li><div @click=${() => this._showAbout()}>${this.msg.about}</div></li>
             ` : nothing}
-            ${Object.keys(tools).length > 0 ? html`<li><hr></li>` : nothing}
-            ${Object.entries(tools).map(([key, tool]) => html`
-                <li><div>${this._renderTool(key, tool, 'menu')}</div></li>
-            `)}
             ${tabs?.options?.length || 0 > 0 ? html`
                 <li><hr></li>
                 <li class=${classMap({ 'with-drop': true })}>
@@ -276,6 +270,10 @@ export class CollabNav3Menu extends StateLitElement {
                     </div>
                 </li>
             ` : nothing}
+            ${Object.keys(tools).length > 0 ? html`<li><hr></li>` : nothing}
+            ${Object.entries(tools).map(([key, tool]) => html`
+                <li><div>${this._renderTool(key, tool, 'menu')}</div></li>
+            `)}
         `;
     }
 

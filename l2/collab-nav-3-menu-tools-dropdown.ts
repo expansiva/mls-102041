@@ -27,7 +27,6 @@ export class CollabNav3MenuToolsDropdown extends StateLitElement {
     @property({ attribute: 'icon' }) icon: string = '';
     @property({ type: Number, attribute: 'selected' }) selected: number = 0;
     @property({ attribute: 'rendertype' }) renderType: string = '';
-    @state() private _dropOpen: boolean = false;
     @state() private _menuOpened: boolean = false;
 
     public onClickTools?: Function;
@@ -69,7 +68,7 @@ export class CollabNav3MenuToolsDropdown extends StateLitElement {
             <span data-key="${this.key}" @click=${this._onHostClick}>
                 ${this._iconTpl(iconStr, iconCls, 'icon-menu')}
                 <i class="fa-solid fa-caret-down icon-drop"></i>
-                <div class="btn-menu ${this._dropOpen ? 'open' : ''}">
+                <div class="btn-menu">
                     <ul>
                         <li class="menu-header">${this.key}</li>
                         ${this.tool.options.map((item, index) => html`
@@ -113,18 +112,28 @@ export class CollabNav3MenuToolsDropdown extends StateLitElement {
         `;
     }
 
+    private _getBtnMenu(): HTMLElement | null {
+        return this.querySelector('.btn-menu');
+    }
+
     private _onHostClick = (e: MouseEvent) => {
-        if (this._dropOpen) {
-            this._dropOpen = false;
+        const divMenu = this._getBtnMenu();
+        if (!divMenu) return;
+
+        if (this.classList.contains('open')) {
+            divMenu.classList.remove('open');
             this.classList.remove('open');
             return;
         }
-        this._dropOpen = true;
+
         this.classList.add('open');
         this.parentElement?.querySelectorAll('.btn-menu').forEach(m => m.classList.remove('open'));
         this.parentElement?.querySelectorAll('collab-nav-3-menu-tools-dropdown').forEach(el => {
             if (el !== this) (el as CollabNav3MenuToolsDropdown)._closeDropdown();
         });
+
+        if (divMenu.classList.contains('open')) divMenu.classList.remove('open');
+        else divMenu.classList.add('open');
     };
 
     private _onMenuHeaderClick = () => {
@@ -133,8 +142,7 @@ export class CollabNav3MenuToolsDropdown extends StateLitElement {
 
     private _onOptionClick(index: number, item: IOptionsToolsDropDown) {
         if (!this.tool) return;
-        this._dropOpen = false;
-        this.classList.remove('open');
+        this._closeDropdown();
         this.selected = index;
         this.tool.selected = index;
         if (typeof this.onClickTools !== 'function') throw new Error('onClickTools not found');
@@ -153,7 +161,7 @@ export class CollabNav3MenuToolsDropdown extends StateLitElement {
     }
 
     public _closeDropdown() {
-        this._dropOpen = false;
+        this._getBtnMenu()?.classList.remove('open');
         this.classList.remove('open');
     }
 
