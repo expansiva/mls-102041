@@ -25,6 +25,13 @@ import { html, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
+
+import '/_102041_/l2/collab-nav-3-menu-tools-link.js';
+import '/_102041_/l2/collab-tooltip.js';
+import '/_102041_/l2/collab-nav-3-menu-tools-cycle.js';
+import '/_102041_/l2/collab-nav-3-menu-tools-dropdown.js';
+import '/_102041_/l2/collab-nav-3-menu-tools-tree-dropdown.js';
+
 import { StateLitElement } from '/_102027_/l2/stateLitElement.js';
 
 type TMode = 'initial' | 'page' | 'editor';
@@ -82,7 +89,42 @@ export class CollabNav3Menu extends StateLitElement {
 
     private msg: MessageType = messages['en'];
 
-    private _menu: IServiceMenu | undefined;
+    private _menu: IServiceMenu | undefined = {
+    title: 'Example',
+    main: {},
+    tools: {
+      darkLight: {
+        type: 'cycle',
+        selected: 0,
+        options: [
+          { text: 'Light', icon: 'f185' },
+          { text: 'Dark', icon: 'f186' },
+        ]
+      },
+      languages: {
+        type: 'dropdown',
+        selected: 0,
+        options: []
+      },
+      watchPreview: {
+        type: 'cycle',
+        selected: 0,
+        options: [
+          { text: 'Run', icon: 'f04c' },
+          { text: 'Pause', icon: 'f04b' },
+        ]
+      },
+    },
+    tabs: {
+      group: 'Mode',
+      type: 'full',
+      selected: 0,
+      options: [
+        { text: 'Desktop', icon: 'f390' },
+        { text: 'Mobile', icon: 'f3cf' },
+      ]
+    }
+  }
     private _isInternalAboutLastOpened: boolean = false;
     private _lastTitle: string = '';
 
