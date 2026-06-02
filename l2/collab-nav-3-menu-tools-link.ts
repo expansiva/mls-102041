@@ -17,6 +17,7 @@ interface IToolsLinkData {
     options: IOptionsToolsLink[];
 }
 
+
 @customElement('collab-nav-3-menu-tools-link')
 export class CollabNav3MenuToolsLink extends StateLitElement {
 
