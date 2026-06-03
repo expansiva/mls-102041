@@ -42,6 +42,8 @@ const message_en = {
     noLastVersion: 'No previous publication found, skipping assets.',
     copyingAssets: 'Copying assets',
     assetsCopied: 'assets copied',
+    updatingLatestJson: 'Updating latest.json',
+    latestJsonUpdated: 'latest.json updated',
 };
 type MessageType = typeof message_en;
 const message_pt: MessageType = {
@@ -79,6 +81,8 @@ const message_pt: MessageType = {
     noLastVersion: 'Nenhuma publicação anterior encontrada, pulando assets.',
     copyingAssets: 'Copiando assets',
     assetsCopied: 'assets copiados',
+    updatingLatestJson: 'Atualizando latest.json',
+    latestJsonUpdated: 'latest.json atualizado',
 };
 const messages: { [key: string]: MessageType } = { en: message_en, pt: message_pt };
 /// **collab_i18n_end**
@@ -94,6 +98,11 @@ interface IS3Config {
 interface IPublishLog {
     message: string;
     type: 'info' | 'success' | 'error';
+}
+
+interface ILatest {
+    www: string;
+    [key: string]: string;
 }
 
 const LS_KEY = 'service_publish_s3_config';
@@ -431,6 +440,12 @@ export class ServicePublish102041 extends ServiceBase {
             }
         }
 
+        try {
+            await this._updateLatestJson(version);
+        } catch (err: any) {
+            this._addLog(`${m.errorPrefix} [latest.json]: ${err?.message ?? String(err)}`, 'error');
+        }
+
         this._addLog(m.publishComplete, 'success');
         this._publishing = false;
     };
@@ -580,8 +595,68 @@ export class ServicePublish102041 extends ServiceBase {
         return res.text();
     }
 
+    // ─── latest.json ───────────────────────────────────────────────────────────
+    private async _updateLatestJson(version: string): Promise<void> {
+        const m = this._msg;
+        this._addLog(m.updatingLatestJson, 'info');
+        const raw = await this._s3GetObject('latest.json');
+        let latest: ILatest;
+        if (raw) {
+            try { latest = JSON.parse(raw); } catch { latest = { www: '' }; }
+            latest.www = version;
+        } else {
+            latest = { www: version };
+        }
+        await this._uploadToS3('latest.json', JSON.stringify(latest), 'application/json');
+        this._addLog(m.latestJsonUpdated, 'success');
+    }
+
+    /** S3 GET for a specific key — returns text content or null if not found. */
+    private async _s3GetObject(s3Key: string): Promise<string | null> {
+        const cfg = this._s3Config;
+        const EMPTY_HASH = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855';
+        const enc = new TextEncoder();
+        const now = new Date();
+        const pad = (n: number) => String(n).padStart(2, '0');
+        const dateStamp = `${now.getUTCFullYear()}${pad(now.getUTCMonth() + 1)}${pad(now.getUTCDate())}`;
+        const amzDate = `${dateStamp}T${pad(now.getUTCHours())}${pad(now.getUTCMinutes())}${pad(now.getUTCSeconds())}Z`;
+
+        const host = cfg.endpoint
+            ? new URL(cfg.endpoint).host
+            : `${cfg.bucket}.s3.${cfg.region}.amazonaws.com`;
+        const url = cfg.endpoint
+            ? `${cfg.endpoint.replace(/\/$/, '')}/${cfg.bucket}/${s3Key}`
+            : `https://${host}/${s3Key}`;
+
+        const canonicalUri = '/' + s3Key.split('/').map(p => encodeURIComponent(p)).join('/');
+        const canonicalHeaders =
+            `host:${host}\n` +
+            `x-amz-content-sha256:${EMPTY_HASH}\n` +
+            `x-amz-date:${amzDate}\n`;
+        const signedHeaders = 'host;x-amz-content-sha256;x-amz-date';
+        const canonicalRequest = `GET\n${canonicalUri}\n\n${canonicalHeaders}\n${signedHeaders}\n${EMPTY_HASH}`;
+
+        const credScope = `${dateStamp}/${cfg.region}/s3/aws4_request`;
+        const stringToSign = `AWS4-HMAC-SHA256\n${amzDate}\n${credScope}\n${await this._sha256Hex(canonicalRequest)}`;
+        const sigKey = await this._getSignatureKey(cfg.secretKey, dateStamp, cfg.region, 's3');
+        const sig = this._toHex(await this._hmacSHA256(sigKey, enc.encode(stringToSign).buffer as ArrayBuffer));
+        const auth = `AWS4-HMAC-SHA256 Credential=${cfg.accessKeyId}/${credScope}, SignedHeaders=${signedHeaders}, Signature=${sig}`;
+
+        const res = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'x-amz-content-sha256': EMPTY_HASH,
+                'x-amz-date': amzDate,
+                'Authorization': auth,
+            },
+        });
+        if (res.status === 404) return null;
+        if (!res.ok) throw new Error(`GetObject failed ${res.status}: ${await res.text().catch(() => res.statusText)}`);
+        return res.text();
+    }
+
     // ─── S3 upload (AWS Signature V4) ──────────────────────────────────────────
-    private async _uploadToS3(s3Key: string, content: string): Promise<void> {
+    private async _uploadToS3(s3Key: string, content: string, contentType = 'text/html; charset=utf-8'): Promise<void> {
         const cfg = this._s3Config;
         const enc = new TextEncoder();
 
@@ -598,8 +673,6 @@ export class ServicePublish102041 extends ServiceBase {
         const url = useCustomEndpoint
             ? `${cfg.endpoint.replace(/\/$/, '')}/${cfg.bucket}/${s3Key}`
             : `https://${cfg.bucket}.s3.${cfg.region}.amazonaws.com/${s3Key}`;
-
-        const contentType = 'text/html; charset=utf-8';
         const payloadHash = await this._sha256Hex(content);
         const canonicalUri = '/' + s3Key.split('/').map(p => encodeURIComponent(p)).join('/');
 
