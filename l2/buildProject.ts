@@ -9,20 +9,80 @@ export function buildIndex(language: string) {
     const index = mls.stor.files['102041_2_index.html'];
     if (!index) throw new Error('No find index page');
     return buildLandingPageByStor(index, language)
-
 }
 
 export async function buildLandingPageByStor(stor: mls.stor.IFileInfo, language: string, theme: string = 'Default') {
     const contentHTML = await stor.getContent() as string;
     let json = await getDependenciesByHtmlFile(stor, contentHTML);
-    // const js = await buildJs(json, stor);
-    return json;
+    const js = await buildJs(json, stor);
+    const html = prepareHTMLFinal(contentHTML, js, json.globalCss)
+    return html;
+}
+
+async function prepareHTMLFinal(
+    contentHTML: string,
+    js: string,
+    globalCss: string
+): Promise<string> {
+
+    const parser = new DOMParser();
+
+    const doc = parser.parseFromString(
+        contentHTML,
+        'text/html'
+    );
+
+    let head = doc.head;
+
+    if (!head) {
+        head = doc.createElement('head');
+        doc.documentElement.prepend(head);
+    }
+
+    if (globalCss?.trim()) {
+        const style = doc.createElement('style');
+        style.id = 'build-global-css';
+        style.textContent = globalCss;
+        head.appendChild(style);
+    }
+
+    let body = doc.body;
+
+    if (!body) {
+        body = doc.createElement('body');
+        doc.documentElement.appendChild(body);
+    }
+
+    const script = doc.createElement('script');
+    script.type = 'module';
+    script.textContent = js;
+    body.appendChild(script);
+
+    return '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+
 }
 
 async function buildJs(json: any, stor: mls.stor.IFileInfo) {
 
     await loadEsbuild();
-    let allImports = [...new Set(json.importsJs.filter((i: string) => i.startsWith('/')))];
+
+    const allImports = [
+        ...new Set(
+            json.importsJs.filter((i: string) => i.startsWith('/'))
+        )
+    ];
+
+    const externalModules = new Set<string>();
+
+    json.importsMap.forEach((item: string) => {
+
+        const match = item.match(/"([^"]+)":\s*"([^"]+)"/);
+
+        if (!match) return;
+
+        externalModules.add(match[1]);
+
+    });
 
     const virtualFsPlugin = {
         name: 'virtual-fs',
@@ -30,75 +90,184 @@ async function buildJs(json: any, stor: mls.stor.IFileInfo) {
 
             build.onResolve({ filter: /.*/ }, (args: any) => {
 
-                if ((args.path.startsWith("/") || args.path.startsWith("./") || args.path.startsWith("../")) &&
-                    !args.importer.startsWith("https://")) {
+                // módulos externos vindos do importMap
+                if (
+                    externalModules.has(args.path) ||
+                    [...externalModules].some(
+                        m => args.path.startsWith(m + '/')
+                    )
+                ) {
 
-                    const url = new URL(args.path, 'file:' + args.importer);
+                    return {
+                        path: args.path,
+                        external: true
+                    };
+
+                }
+
+                // urls externas
+                if (
+                    args.path.startsWith('http://') ||
+                    args.path.startsWith('https://')
+                ) {
+
+                    return {
+                        path: args.path,
+                        external: true
+                    };
+
+                }
+
+                if (
+                    (
+                        args.path.startsWith('/') ||
+                        args.path.startsWith('./') ||
+                        args.path.startsWith('../')
+                    ) &&
+                    !args.importer.startsWith('https://')
+                ) {
+
+                    const url = new URL(
+                        args.path,
+                        'file:' + args.importer
+                    );
+
                     let path = url.pathname;
 
                     if (!(/_(\d+)_/.test(path))) {
 
-                        const info = getPath(args.importer.replace('/l2/', '').replace('/', ''));
+                        const info = getPath(
+                            args.importer
+                                .replace('/l2/', '')
+                                .replace('/', '')
+                        );
 
-                        if (!info) throw new Error('[virtualFsPlugin] Not found path:' + args.importer.replace('/l2/', '').replace('/', ''));
+                        if (!info) {
 
-                        if (!info.project) info.project = mls.actualProject as number;
+                            throw new Error(
+                                '[virtualFsPlugin] Not found path:' +
+                                args.importer
+                                    .replace('/l2/', '')
+                                    .replace('/', '')
+                            );
 
-                        if (path.indexOf(`_${info.project}_`) < 0) {
-                            path = url.pathname.replace('/', `/_${info.project}_`)
                         }
+
+                        if (!info.project) {
+                            info.project = mls.actualProject as number;
+                        }
+
+                        if (
+                            path.indexOf(`_${info.project}_`) < 0
+                        ) {
+
+                            path = url.pathname.replace(
+                                '/',
+                                `/_${info.project}_`
+                            );
+
+                        }
+
                     }
 
-                    return { path, namespace: 'virtual' };
+                    return {
+                        path,
+                        namespace: 'virtual'
+                    };
 
                 }
 
                 return null;
+
             });
 
-            build.onLoad({ filter: /.*/, namespace: 'virtual' }, async (args: any) => {
-                try {
+            build.onLoad(
+                {
+                    filter: /.*/,
+                    namespace: 'virtual'
+                },
+                async (args: any) => {
 
-                    let path = args.path;
+                    try {
 
-                    const res = await fetch(path);
-                    if (!res.ok) throw new Error(`Error get ${args.path}`);
+                        const res = await fetch(args.path);
 
-                    const text = await res.text();
-                    return { contents: text, loader: 'js' };
+                        if (!res.ok) {
 
-                } catch (e: any) {
-                    console.info('erro:' + args.path);
-                    return {
-                        contents: '',
-                        loader: 'js',
-                        warnings: [{
-                            text: e.message, notes: [
-                                { text: 'build-error' }
+                            throw new Error(
+                                `Error get ${args.path}`
+                            );
+
+                        }
+
+                        const text = await res.text();
+
+                        return {
+                            contents: text,
+                            loader: 'js'
+                        };
+
+                    } catch (e: any) {
+
+                        console.info('erro:' + args.path);
+
+                        return {
+                            contents: '',
+                            loader: 'js',
+                            warnings: [
+                                {
+                                    text: e.message,
+                                    notes: [
+                                        {
+                                            text: 'build-error'
+                                        }
+                                    ]
+                                }
                             ]
-                        }]
-                    }
-                }
+                        };
 
-            });
-        },
+                    }
+
+                }
+            );
+
+        }
     };
 
-    const virtualEntryPath = "virtual-entry.js";
-    const virtualEntryContent = allImports.map(path => `import "${path}";`).join("\n");
+    const virtualEntryPath = 'virtual-entry.js';
+
+    const globalCss = json.globalCss || '';
+
+    const virtualEntryContent = `
+
+(() => {
+
+    const style = document.createElement('style');
+    style.setAttribute('data-build-css', 'global');
+    style.textContent = ${JSON.stringify(globalCss)};
+    document.head.appendChild(style);
+
+})();
+
+${allImports
+            .map(path => `import "${path}";`)
+            .join('\n')}
+
+`;
 
     const result = await esbuild.build({
         stdin: {
             contents: virtualEntryContent,
-            resolveDir: "/",
+            resolveDir: '/',
             sourcefile: virtualEntryPath,
-            loader: "js"
+            loader: 'js'
         },
         bundle: true,
         minify: false,
-        format: "esm",
+        format: 'esm',
         sourcemap: false,
         write: false,
+        treeShaking: true,
         plugins: [virtualFsPlugin]
     });
 

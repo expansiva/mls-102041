@@ -4,6 +4,7 @@ import { html, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import { ServiceBase, IService, IToolbarContent, IServiceMenu } from '/_102027_/l2/serviceBase.js';
 import { getConfigProject } from '/_102027_/l2/libProjectConfig.js';
+import { buildIndex } from '/_102041_/l2/buildProject.js';
 
 /// **collab_i18n_start**
 const message_en = {
@@ -81,9 +82,6 @@ const message_pt: MessageType = {
 };
 const messages: { [key: string]: MessageType } = { en: message_en, pt: message_pt };
 /// **collab_i18n_end**
-
-
-declare function buildIndex(language: string): Promise<string>;
 
 interface IS3Config {
     bucket: string;
@@ -233,14 +231,14 @@ export class ServicePublish102041 extends ServiceBase {
                     ?disabled=${this._publishing || this._loadingLangs || this._selected.length === 0}
                     @click=${this._publish}>
                     ${this._publishing
-                        ? html`<span class="inline-flex items-center justify-center gap-2">
+                ? html`<span class="inline-flex items-center justify-center gap-2">
                             <svg class="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
                             </svg>
                             ${m.publishing}
                           </span>`
-                        : m.publish}
+                : m.publish}
                 </button>
             </div>
 
@@ -258,8 +256,8 @@ export class ServicePublish102041 extends ServiceBase {
                     <div class="bg-gray-950 dark:bg-black rounded-lg p-3 max-h-52 overflow-y-auto font-mono text-xs flex flex-col gap-0.5 border border-gray-800">
                         ${this._logs.map(log => html`
                             <div class=${log.type === 'success' ? 'text-green-400'
-                                       : log.type === 'error'   ? 'text-red-400'
-                                       : 'text-gray-300'}>
+                        : log.type === 'error' ? 'text-red-400'
+                            : 'text-gray-300'}>
                                 ${log.message}
                             </div>
                         `)}
@@ -325,8 +323,8 @@ export class ServicePublish102041 extends ServiceBase {
 
                 <button
                     class="w-full px-4 py-2 font-medium rounded transition-colors ${this._configSaved
-                        ? 'bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white'
-                        : 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white'}"
+                ? 'bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white'
+                : 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white'}"
                     @click=${this._saveConfig}>
                     ${this._configSaved ? m.configSaved : m.saveConfig}
                 </button>
