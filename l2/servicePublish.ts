@@ -44,6 +44,7 @@ const message_en = {
     assetsCopied: 'assets copied',
     updatingLatestJson: 'Updating latest.json',
     latestJsonUpdated: 'latest.json updated',
+    uploadingRoot: 'Uploading root',
 };
 type MessageType = typeof message_en;
 const message_pt: MessageType = {
@@ -83,6 +84,7 @@ const message_pt: MessageType = {
     assetsCopied: 'assets copiados',
     updatingLatestJson: 'Atualizando latest.json',
     latestJsonUpdated: 'latest.json atualizado',
+    uploadingRoot: 'Enviando raiz',
 };
 const messages: { [key: string]: MessageType } = { en: message_en, pt: message_pt };
 /// **collab_i18n_end**
@@ -428,6 +430,11 @@ export class ServicePublish102041 extends ServiceBase {
                 const s3Key = `www/${version}/${lang}/index.html`;
                 this._addLog(`${m.uploading}: ${s3Key}`, 'info');
                 await this._uploadToS3(s3Key, indexHtml);
+
+                if (lang === this._selected[0]) {
+                    this._addLog(`${m.uploadingRoot}: index.html`, 'info');
+                    await this._uploadToS3('index.html', indexHtml);
+                }
 
                 this._addLog(`${m.done} — ${lang}`, 'success');
 
