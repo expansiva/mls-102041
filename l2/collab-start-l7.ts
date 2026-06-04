@@ -8,7 +8,6 @@ import '/_102041_/l2/collab-ticker.js';
 @customElement('collab-start-l7')
 export class CollabStartL7 extends StateLitElement {
 
-
     @property({ attribute: 'language' }) language: string = '';
     @property({ attribute: 'mode' }) mode: string = '';
     @property({ attribute: 'msize' }) msize: string = '';
@@ -65,10 +64,10 @@ export class CollabStartL7 extends StateLitElement {
 
     updated(changed: Map<string, unknown>) {
         super.updated(changed);
-        if (changed.has('mode') && changed.get('mode') !== undefined) {
+        if (changed.has('mode') && changed.get('mode') !== undefined && changed.get('mode') !== '') {
             this._loadIframe();
         }
-        if (changed.has('msize') && changed.get('msize') !== undefined) {
+        if (changed.has('msize')) {
             const iframe = this.querySelector('#iframe-container iframe') as HTMLIFrameElement;
             if (iframe) iframe.style.height = this._msizeObj.height + 'px';
         }
@@ -88,12 +87,15 @@ export class CollabStartL7 extends StateLitElement {
         const iframeContainer = this.querySelector('#iframe-container') as HTMLElement;
         if (!iframeContainer) return;
 
+        iframeContainer.innerHTML = '';
+
         const iframe = document.createElement('iframe');
         iframe.style.border = 'none';
         iframe.style.width = '100%';
         iframe.style.height = this._msizeObj.height + 'px';
-        iframe.src = `https://www.collab.codes/landingpage.html`;
+        iframe.src = this.baseUrl ? `${this.baseUrl}/landingpage.html` : `https://www.collab.codes/landingpage.html`;
         iframe.onload = () => this._onIframeLoaded();
+        iframe.onerror = () => this._onIframeLoaded();
 
         iframeContainer.appendChild(iframe);
     }
