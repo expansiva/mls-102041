@@ -299,7 +299,7 @@ export class CollabNav3 extends StateLitElement {
     private _isCollabService(service: string) { return !service.startsWith('_100529_'); }
 
     private _convertFileNameToTag(widget: string): string {
-        const match = widget.match(/_([0-9]+)?(.*)/);
+        const match = widget.match(/_([0-9]+)_(.*)/);
         if (match) {
             const [, number, rest] = match;
             const converted = rest.replace(/([A-Z])/g, '-$1').toLowerCase();
