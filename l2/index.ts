@@ -40,9 +40,9 @@ import '/_102041_/l2/collab-start-l7.js';
         collabNav1.setAttribute('status', 'start');
     };
 
-    const initModoL7AfterLogin = (anonymous: boolean, baseProject: number) => {
+    const initModoL7AfterLogin = async (anonymous: boolean, baseProject: number) => {
+        await customElements.whenDefined('collab-start-l7');
         const startL7 = document.querySelector('collab-start-l7');
-        console.info(startL7);
         if (startL7) startL7.setAttribute('mode', anonymous ? 'anonymous' : 'default');
         if (anonymous) {
             const prjDetailsStr = localStorage.getItem('projectDetails');
