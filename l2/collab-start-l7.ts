@@ -3,8 +3,9 @@
 import { html, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { StateLitElement } from '/_102027_/l2/stateLitElement.js';
+import '/_102041_/l2/collab-ticker.js';
 
-@customElement('collab-start-l7-100529')
+@customElement('collab-start-l7')
 export class CollabStartL7 extends StateLitElement {
 
     @property({ attribute: 'language' }) language: string = '';

@@ -1,0 +1,63 @@
+/// <mls fileReference="_102041_/l2/collab-ticker.less" enhancement="_blank"/>
+
+collab-ticker { 
+    display: block; 
+    
+    >p , >h1, >h2, >h3, >h4, >h5, >h6, >span {
+        width:100%;
+        height: 100%;
+        color:rgb(0, 0, 0);
+        white-space: nowrap;
+        text-transform: lowercase;
+        overflow: hidden;
+        border-right: .15em solid #000000;
+        opacity: 0;
+        animation: type2 2s steps(20, end);
+        animation-fill-mode: forwards;
+        margin-bottom: 15px;
+        &:last-child {
+            animation: type3 2s steps(20, end), blink .3s step-end infinite alternate;
+            animation-delay: 4s;
+            animation-fill-mode: forwards;
+           
+        }
+        i{
+            color:var(--collab-text-primary-color);
+        }
+    }
+
+  @keyframes type2 {
+    0% {
+      width: 0;
+    }
+    1% {
+      opacity: 1;
+    }
+    99.9% {
+      border-right: .15em solid orange;
+    }
+    100% {
+      opacity: 1;
+      border: none;
+    }
+  }
+
+  @keyframes type3 {
+    0% {
+      width: 0;
+    }
+    1% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+ 
+  @keyframes blink {
+    50% {
+      border-color: transparent;
+    }
+  }
+}
+
