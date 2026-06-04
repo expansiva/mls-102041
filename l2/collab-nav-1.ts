@@ -100,7 +100,7 @@ export class CollabNav1 extends StateLitElement {
     updated(changed: Map<string, unknown>) {
         if (changed.has('tabindexactive')) {
             const oldVal = changed.get('tabindexactive') as string;
-            if (oldVal === '5' && mls?.stor?.cache?.['clearObsoleteCache']) {
+            if (oldVal === '5' && window.mls && mls?.stor?.cache?.['clearObsoleteCache']) {
                 mls.stor.cache['clearObsoleteCache']();
             }
             if (this._lastActive !== this.tabActive) this._activeMe(this.tabActive);
@@ -241,7 +241,7 @@ export class CollabNav1 extends StateLitElement {
         this._activeIndex = idx;
         this._lastActive = idx;
         this.setAttribute('tabindexactive', String(idx));
-        if (mls?.setActualLevel) mls.setActualLevel(this.actualLevel as mls.Level);
+        if (window.mls && mls?.setActualLevel) mls.setActualLevel(this.actualLevel as mls.Level);
         this._fireChangeLevel(lastLevel);
     }
 
