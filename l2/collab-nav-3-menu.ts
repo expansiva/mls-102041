@@ -26,12 +26,6 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 
-import '/_102041_/l2/collab-nav-3-menu-tools-link.js';
-import '/_102041_/l2/collab-tooltip.js';
-import '/_102041_/l2/collab-nav-3-menu-tools-cycle.js';
-import '/_102041_/l2/collab-nav-3-menu-tools-dropdown.js';
-import '/_102041_/l2/collab-nav-3-menu-tools-tree-dropdown.js';
-
 import { StateLitElement } from '/_102027_/l2/stateLitElement.js';
 
 type TMode = 'initial' | 'page' | 'editor';
