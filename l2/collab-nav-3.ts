@@ -226,7 +226,7 @@ export class CollabNav3 extends StateLitElement {
             };
             script.onerror = () => {
                 this._createToolbarService(content);
-                const key = mls?.stor?.getKeyToFiles(project, 2, path, '', '.ts');
+                const key = mls?.stor?.getKeyToFiles(project || 0, 2, path || '', '', '.ts');
                 const err = `File: ${key} don't exist`;
                 reject(new Error(err));
             };
