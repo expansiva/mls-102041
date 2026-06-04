@@ -280,8 +280,13 @@ export class CollabNav1 extends StateLitElement {
             await Promise.all(['collab-nav-2', 'collab-nav-3'].map(wc => customElements.whenDefined(wc)));
             const page = document.querySelector('collab-page');
             if (!page) return;
+            this._activeIndex = 0;
+            this._lastActive = 0;
+            const startLevel = String(this.actualLevel);
             const nav2sStatus = Array.from(page.querySelectorAll('collab-nav-2'));
             const [nav2Right, nav2Left] = nav2sStatus;
+            page.querySelectorAll('collab-nav-3').forEach(n3 => n3.setAttribute('level', startLevel));
+            nav2Right?.setAttribute('level', startLevel); nav2Left?.setAttribute('level', startLevel);
             nav2Right?.setAttribute('status', 'start'); nav2Left?.setAttribute('status', 'start');
         }
         if (this.status === 'anonymous') { await this._changeStatusIfAnonymous(); return; }
