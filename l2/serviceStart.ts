@@ -147,7 +147,7 @@ export class ServiceStart extends ServiceBase {
             return;
         }
 
-        this._contentDiv!.setAttribute('data-service', '_100529_service_start');
+        this._contentDiv!.setAttribute('data-service', '_100541_serviceStart');
         this._contentDiv!.style.opacity = '0.1';
         this._contentDiv!.style.transition = '400ms';
 
