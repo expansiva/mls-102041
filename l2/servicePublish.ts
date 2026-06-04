@@ -513,15 +513,8 @@ export class ServicePublish102041 extends ServiceBase {
         const dateStamp = `${now.getUTCFullYear()}${pad(now.getUTCMonth() + 1)}${pad(now.getUTCDate())}`;
         const amzDate = `${dateStamp}T${pad(now.getUTCHours())}${pad(now.getUTCMinutes())}${pad(now.getUTCSeconds())}Z`;
 
-        const host = cfg.endpoint
-            ? new URL(cfg.endpoint).host
-            : `${cfg.bucket}.s3.${cfg.region}.amazonaws.com`;
-        const url = cfg.endpoint
-            ? `${cfg.endpoint.replace(/\/$/, '')}/${cfg.bucket}/${dstKey}`
-            : `https://${host}/${dstKey}`;
+        const { host, url, canonicalUri } = this._s3Addr(dstKey);
         const copySource = encodeURIComponent(`/${cfg.bucket}/${srcKey}`);
-
-        const canonicalUri = '/' + dstKey.split('/').map(encodeURIComponent).join('/');
         const canonicalHeaders =
             `host:${host}\n` +
             `x-amz-content-sha256:${EMPTY_HASH}\n` +
@@ -558,24 +551,18 @@ export class ServicePublish102041 extends ServiceBase {
         const dateStamp = `${now.getUTCFullYear()}${pad(now.getUTCMonth() + 1)}${pad(now.getUTCDate())}`;
         const amzDate = `${dateStamp}T${pad(now.getUTCHours())}${pad(now.getUTCMinutes())}${pad(now.getUTCSeconds())}Z`;
 
-        const host = cfg.endpoint
-            ? new URL(cfg.endpoint).host
-            : `${cfg.bucket}.s3.${cfg.region}.amazonaws.com`;
         const canonicalQS = Object.entries(queryParams)
             .sort(([a], [b]) => a.localeCompare(b))
             .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
             .join('&');
-        const baseUrl = cfg.endpoint
-            ? `${cfg.endpoint.replace(/\/$/, '')}/${cfg.bucket}`
-            : `https://${host}`;
-        const url = `${baseUrl}/?${canonicalQS}`;
+        const { host, url, canonicalUri } = this._s3ListAddr(canonicalQS);
 
         const canonicalHeaders =
             `host:${host}\n` +
             `x-amz-content-sha256:${EMPTY_HASH}\n` +
             `x-amz-date:${amzDate}\n`;
         const signedHeaders = 'host;x-amz-content-sha256;x-amz-date';
-        const canonicalRequest = `GET\n/\n${canonicalQS}\n${canonicalHeaders}\n${signedHeaders}\n${EMPTY_HASH}`;
+        const canonicalRequest = `GET\n${canonicalUri}\n${canonicalQS}\n${canonicalHeaders}\n${signedHeaders}\n${EMPTY_HASH}`;
 
         const credScope = `${dateStamp}/${cfg.region}/s3/aws4_request`;
         const stringToSign = `AWS4-HMAC-SHA256\n${amzDate}\n${credScope}\n${await this._sha256Hex(canonicalRequest)}`;
@@ -621,14 +608,7 @@ export class ServicePublish102041 extends ServiceBase {
         const dateStamp = `${now.getUTCFullYear()}${pad(now.getUTCMonth() + 1)}${pad(now.getUTCDate())}`;
         const amzDate = `${dateStamp}T${pad(now.getUTCHours())}${pad(now.getUTCMinutes())}${pad(now.getUTCSeconds())}Z`;
 
-        const host = cfg.endpoint
-            ? new URL(cfg.endpoint).host
-            : `${cfg.bucket}.s3.${cfg.region}.amazonaws.com`;
-        const url = cfg.endpoint
-            ? `${cfg.endpoint.replace(/\/$/, '')}/${cfg.bucket}/${s3Key}`
-            : `https://${host}/${s3Key}`;
-
-        const canonicalUri = '/' + s3Key.split('/').map(p => encodeURIComponent(p)).join('/');
+        const { host, url, canonicalUri } = this._s3Addr(s3Key);
         const canonicalHeaders =
             `host:${host}\n` +
             `x-amz-content-sha256:${EMPTY_HASH}\n` +
@@ -665,16 +645,8 @@ export class ServicePublish102041 extends ServiceBase {
         const dateStamp = `${now.getUTCFullYear()}${pad(now.getUTCMonth() + 1)}${pad(now.getUTCDate())}`;
         const amzDate = `${dateStamp}T${pad(now.getUTCHours())}${pad(now.getUTCMinutes())}${pad(now.getUTCSeconds())}Z`;
 
-        const useCustomEndpoint = !!(cfg.endpoint);
-        const host = useCustomEndpoint
-            ? new URL(cfg.endpoint).host
-            : `${cfg.bucket}.s3.${cfg.region}.amazonaws.com`;
-
-        const url = useCustomEndpoint
-            ? `${cfg.endpoint.replace(/\/$/, '')}/${cfg.bucket}/${s3Key}`
-            : `https://${cfg.bucket}.s3.${cfg.region}.amazonaws.com/${s3Key}`;
+        const { host, url, canonicalUri } = this._s3Addr(s3Key);
         const payloadHash = await this._sha256Hex(content);
-        const canonicalUri = '/' + s3Key.split('/').map(p => encodeURIComponent(p)).join('/');
 
         const canonicalHeaders =
             `content-type:${contentType}\n` +
@@ -706,6 +678,39 @@ export class ServicePublish102041 extends ServiceBase {
             const text = await response.text().catch(() => response.statusText);
             throw new Error(`HTTP ${response.status}: ${text}`);
         }
+    }
+
+    // ─── S3 address helper ─────────────────────────────────────────────────────
+    /** Returns host, object URL and canonical URI for a given key.
+     *  Uses path-style when bucket contains dots (wildcard cert incompatible). */
+    private _s3Addr(key: string): { host: string; url: string; canonicalUri: string } {
+        const cfg = this._s3Config;
+        const encodedKey = key.split('/').map(encodeURIComponent).join('/');
+        if (cfg.endpoint) {
+            const host = new URL(cfg.endpoint).host;
+            return { host, url: `${cfg.endpoint.replace(/\/$/, '')}/${cfg.bucket}/${key}`, canonicalUri: `/${encodedKey}` };
+        }
+        if (cfg.bucket.includes('.')) {
+            const host = `s3.${cfg.region}.amazonaws.com`;
+            return { host, url: `https://${host}/${cfg.bucket}/${key}`, canonicalUri: `/${cfg.bucket}/${encodedKey}` };
+        }
+        const host = `${cfg.bucket}.s3.${cfg.region}.amazonaws.com`;
+        return { host, url: `https://${host}/${key}`, canonicalUri: `/${encodedKey}` };
+    }
+
+    /** Returns host, list URL and canonical URI for ListObjectsV2. */
+    private _s3ListAddr(canonicalQS: string): { host: string; url: string; canonicalUri: string } {
+        const cfg = this._s3Config;
+        if (cfg.endpoint) {
+            const host = new URL(cfg.endpoint).host;
+            return { host, url: `${cfg.endpoint.replace(/\/$/, '')}/${cfg.bucket}/?${canonicalQS}`, canonicalUri: '/' };
+        }
+        if (cfg.bucket.includes('.')) {
+            const host = `s3.${cfg.region}.amazonaws.com`;
+            return { host, url: `https://${host}/${cfg.bucket}/?${canonicalQS}`, canonicalUri: `/${cfg.bucket}/` };
+        }
+        const host = `${cfg.bucket}.s3.${cfg.region}.amazonaws.com`;
+        return { host, url: `https://${host}/?${canonicalQS}`, canonicalUri: '/' };
     }
 
     // ─── crypto helpers ────────────────────────────────────────────────────────
