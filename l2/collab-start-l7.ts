@@ -9,7 +9,7 @@ import '/_102041_/l2/collab-ticker.js';
 export class CollabStartL7 extends StateLitElement {
 
     @property({ attribute: 'language' }) language: string = '';
-    @property({ attribute: 'mode' }) mode: string = '';
+    @property({ attribute: 'mode' }) mode: string = 'default';
     @property({ attribute: 'msize' }) msize: string = '';
 
     @state() private _iframeVisible = false;
@@ -59,7 +59,7 @@ export class CollabStartL7 extends StateLitElement {
     firstUpdated(changedProperties: Map<PropertyKey, unknown>) {
         super.firstUpdated(changedProperties);
         this._setEvents();
-        if (this.mode) this._loadIframe();
+        this._loadIframe();
     }
 
     updated(changed: Map<string, unknown>) {
