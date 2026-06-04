@@ -8,6 +8,7 @@ import '/_102041_/l2/collab-ticker.js';
 @customElement('collab-start-l7')
 export class CollabStartL7 extends StateLitElement {
 
+
     @property({ attribute: 'language' }) language: string = '';
     @property({ attribute: 'mode' }) mode: string = '';
     @property({ attribute: 'msize' }) msize: string = '';
@@ -43,7 +44,7 @@ export class CollabStartL7 extends StateLitElement {
                                             height="120" width="120" alt="Ícone Collab Codes">
                                     </div>
                                     <div style="display:flex; flex-wrap:wrap;">
-                                        <h1 style="margin-left: -26px;">ollab.</h1>
+                                        <h1>ollab.</h1>
                                         <collab-ticker text="<i>codes</i>" element="h1"></collab-ticker>
                                     </div>
                                 </div>
