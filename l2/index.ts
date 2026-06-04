@@ -1,6 +1,14 @@
 /// <mls fileReference="_102041_/l2/index.ts" enhancement="_blank"/>
 
+import '/_102041_/l2/collab-nav-3-menu';
+import '/_102041_/l2/collab-nav-3-menu-tools-cycle';
+import '/_102041_/l2/collab-nav-3-menu-tools-dropdown';
+import '/_102041_/l2/collab-nav-3-menu-tools-link';
+import '/_102041_/l2/collab-nav-3-menu-tools-tree-dropdown';
+import '/_102041_/l2/collab-nav-3-menu-tools-cycle';
+
 (() => {
+
     let versionLib: string;
     let versionMonaco: string;
     const version = '1.2';
