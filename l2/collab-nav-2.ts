@@ -63,7 +63,7 @@ export class CollabNav2 extends StateLitElement {
 
     private msg: MessageType = messages['en'];
 
-    private readonly _staticService = ['_100529_service_start', '_100529_service_home'];
+    private readonly _staticService = ['_102041_serviceStart'];
 
     public layout() { this._verifyControllers(); }
 
@@ -294,7 +294,7 @@ export class CollabNav2 extends StateLitElement {
 
     private _setInitialServicesAfterEnabled() {
         if (this._onlyFirstTime[this.position]) return;
-        const START = '_100529_service_start';
+        const START = '_102041_serviceStart';
         const s: ICollabState = { ...this.state_, 7: { left: '', right: '' } };
         for (const key in this.actualServices) {
             const _key = Number.parseInt(key)
@@ -333,13 +333,13 @@ export class CollabNav2 extends StateLitElement {
     }
 
     private _staticServices: ICollabServiceData = {
-        0: { left: [{ widget: '_100529_service_start', state: 'foreground', icon: '&#xf059', tooltip: this.msg.start, isStatic: true, visible: true }], right: [] },
-        1: { left: [{ widget: '_100529_service_start', state: 'foreground', icon: '&#xf059', tooltip: this.msg.start, isStatic: true, visible: true }], right: [] },
-        2: { left: [{ widget: '_100529_service_start', state: 'foreground', icon: '&#xf059', tooltip: this.msg.start, isStatic: true, visible: true }], right: [] },
-        3: { left: [{ widget: '_100529_service_start', state: 'foreground', icon: '&#xf059', tooltip: this.msg.start, isStatic: true, visible: true }], right: [] },
-        4: { left: [{ widget: '_100529_service_start', state: 'foreground', icon: '&#xf059', tooltip: this.msg.start, isStatic: true, visible: true }], right: [] },
-        5: { left: [{ widget: '_100529_service_start', state: 'foreground', icon: '&#xf059', tooltip: this.msg.start, isStatic: true, visible: true }], right: [] },
-        6: { left: [{ widget: '_100529_service_start', state: 'foreground', icon: '&#xf059', tooltip: this.msg.start, isStatic: true, visible: true }], right: [] },
-        7: { left: [{ widget: '_100529_service_start', state: 'foreground', icon: '&#xf059', tooltip: this.msg.start, isStatic: true, visible: true }], right: [] },
+        0: { left: [{ widget: '_102041_serviceStart', state: 'foreground', icon: '&#xf059', tooltip: this.msg.start, isStatic: true, visible: true }], right: [] },
+        1: { left: [{ widget: '_102041_serviceStart', state: 'foreground', icon: '&#xf059', tooltip: this.msg.start, isStatic: true, visible: true }], right: [] },
+        2: { left: [{ widget: '_102041_serviceStart', state: 'foreground', icon: '&#xf059', tooltip: this.msg.start, isStatic: true, visible: true }], right: [] },
+        3: { left: [{ widget: '_102041_serviceStart', state: 'foreground', icon: '&#xf059', tooltip: this.msg.start, isStatic: true, visible: true }], right: [] },
+        4: { left: [{ widget: '_102041_serviceStart', state: 'foreground', icon: '&#xf059', tooltip: this.msg.start, isStatic: true, visible: true }], right: [] },
+        5: { left: [{ widget: '_102041_serviceStart', state: 'foreground', icon: '&#xf059', tooltip: this.msg.start, isStatic: true, visible: true }], right: [] },
+        6: { left: [{ widget: '_102041_serviceStart', state: 'foreground', icon: '&#xf059', tooltip: this.msg.start, isStatic: true, visible: true }], right: [] },
+        7: { left: [{ widget: '_102041_serviceStart', state: 'foreground', icon: '&#xf059', tooltip: this.msg.start, isStatic: true, visible: true }], right: [] },
     };
 }

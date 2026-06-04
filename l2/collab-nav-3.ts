@@ -331,7 +331,7 @@ export class CollabNav3 extends StateLitElement {
         const msize = [width, newHeight.toFixed(2), newTop.toFixed(2), left].join(',');
         const msizeMenu = [width, mHeightMenu, newTop.toFixed(2), left].join(',');
         let service: Element | undefined | null = children.find(c => c.tagName.startsWith('SERVICE-'));
-        const isServiceStart = activeService.querySelector('div[data-service="_100529_service_start"]') as HTMLElement;
+        const isServiceStart = activeService.querySelector('div[data-service="_102041_serviceStart"]') as HTMLElement;
         if (isServiceStart) {
             isServiceStart.style.height = newHeight.toFixed(2) + 'px';
             service = activeService.querySelector('[data-service]');

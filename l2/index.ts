@@ -32,7 +32,7 @@
     };
 
     const initModoL7AfterLogin = (anonymous: boolean, baseProject: number) => {
-        const startL7 = document.querySelector('collab-start-l7-100529');
+        const startL7 = document.querySelector('collab-start-l7');
         if (startL7) startL7.setAttribute('mode', anonymous ? 'anonymous' : 'default');
         if (anonymous) {
             const prjDetailsStr = localStorage.getItem('projectDetails');

@@ -47,7 +47,7 @@ export class ServiceStart extends ServiceBase {
 
     attributeChangedCallback(name: string, oldVal: string, newVal: string) {
         if (name === 'msize' && this._contentDiv) {
-            const l7Start = this._contentDiv.querySelector('collab-start-l7-100529');
+            const l7Start = this._contentDiv.querySelector('collab-start-l7');
             if (l7Start) l7Start.setAttribute('msize', newVal);
         }
         super.attributeChangedCallback(name, oldVal, newVal);
@@ -60,9 +60,8 @@ export class ServiceStart extends ServiceBase {
     private _showAbout(): boolean {
         const div1 = document.createElement('div');
         div1.innerHTML = '<h1>About this Service</h1>'
-            + '<h2>Service Name: _100529_service_start</h2>'
+            + '<h2>Service Name: _102041_serviceStart</h2>'
             + '<hr>'
-            + `<a href="https://multilevelstudio.com/#/l2/_100529_service_start" target="_blank"> Service Source: https://multilevelstudio.com/#/l2/_100529_service_start </a>`
             + `<p>Widget Source in mls2: _100554_mlsStartL${this.level} </p>`
             + '<hr>'
             + '<br>';
