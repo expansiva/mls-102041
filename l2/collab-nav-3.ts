@@ -360,6 +360,15 @@ export class CollabNav3 extends StateLitElement {
         });
     }
 
+    override setAttribute(name: string, value: string) {
+        if (name === 'loading' && value === this.getAttribute(name)) {
+            if (value === 'false') this._hideLoading();
+            else if (value === 'true') this._showLoading();
+            return;
+        }
+        super.setAttribute(name, value);
+    }
+
     private _showLoading() {
         const container = this._getBindService();
         if (!container) return;

@@ -1,11 +1,12 @@
 /// <mls fileReference="_102041_/l2/index.ts" enhancement="_blank"/>
 
-import '/_102041_/l2/collab-nav-3-menu';
-import '/_102041_/l2/collab-nav-3-menu-tools-cycle';
-import '/_102041_/l2/collab-nav-3-menu-tools-dropdown';
-import '/_102041_/l2/collab-nav-3-menu-tools-link';
-import '/_102041_/l2/collab-nav-3-menu-tools-tree-dropdown';
-import '/_102041_/l2/collab-nav-3-menu-tools-cycle';
+import '/_102041_/l2/collab-nav-3-menu.js';
+import '/_102041_/l2/collab-nav-3-menu-tools-cycle.js';
+import '/_102041_/l2/collab-nav-3-menu-tools-dropdown.js';
+import '/_102041_/l2/collab-nav-3-menu-tools-link.js';
+import '/_102041_/l2/collab-nav-3-menu-tools-tree-dropdown.js';
+import '/_102041_/l2/collab-nav-3-menu-tools-cycle.js';
+import '/_102041_/l2/collab-start-l7.js';
 
 (() => {
 
