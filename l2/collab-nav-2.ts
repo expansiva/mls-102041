@@ -12,7 +12,7 @@ const messages: { [key: string]: MessageType } = { en: message_en, pt: message_p
 /// **collab_i18n_end**
 
 import { html, nothing } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
@@ -36,7 +36,6 @@ interface ICollabService3 {
 interface ICollabServiceData { [key: number]: { left: ICollabService3[]; right: ICollabService3[]; }; }
 interface ICollabState { [key: number]: { left: string; right: string; }; }
 
-@customElement('collab-nav-2')
 export class CollabNav2 extends StateLitElement {
 
     @property({ type: Number, attribute: 'level' }) level: number = 0;
@@ -344,3 +343,5 @@ export class CollabNav2 extends StateLitElement {
         7: { left: [{ widget: '_102041_serviceStart', state: 'foreground', icon: '&#xf059', tooltip: this.msg.start, isStatic: true, visible: true }], right: [] },
     };
 }
+
+window.addEventListener('mls:ready', () => customElements.define('collab-nav-2', CollabNav2), { once: true });

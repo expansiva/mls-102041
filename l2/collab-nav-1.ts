@@ -26,7 +26,7 @@ const messages: { [key: string]: MessageType } = { en: message_en, pt: message_p
 /// **collab_i18n_end**
 
 import { html, nothing } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { StateLitElement } from '/_102027_/l2/stateLitElement.js';
@@ -49,7 +49,6 @@ interface INav1CollabServiceData { [key: number]: { left: any[]; right: any[]; }
 interface INav1CollabService3 { widget: string; state: string; icon: string; tooltip: string; visible: boolean; tags?: string[]; isStatic?: boolean; customConfiguration?: any; }
 interface INav1Service { widget: string; state: string; icon: string; tooltip: string; visible: boolean; position: string; level: number[]; tags?: string[]; classname?: string; isStatic?: boolean; customConfiguration?: any; }
 
-@customElement('collab-nav-1')
 export class CollabNav1 extends StateLitElement {
 
     @property({ attribute: 'tabindexactive' }) tabindexactive: string = '';
@@ -563,3 +562,5 @@ export class CollabNav1 extends StateLitElement {
         ];
     }
 }
+
+window.addEventListener('mls:ready', () => customElements.define('collab-nav-1', CollabNav1), { once: true });
