@@ -103,7 +103,7 @@ export class CollabNav1 extends StateLitElement {
             if (oldVal === '5' && window.mls && mls?.stor?.cache?.['clearObsoleteCache']) {
                 mls.stor.cache['clearObsoleteCache']();
             }
-            if (this._lastActive !== this.tabActive) this._activeMe(this.tabActive);
+            if (this._lastActive !== this.tabActive && this.status !== 'start') this._activeMe(this.tabActive);
         }
         if (changed.has('status')) this._changeStatus();
     }

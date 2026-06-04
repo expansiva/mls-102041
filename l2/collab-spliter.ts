@@ -1,12 +1,11 @@
 /// <mls fileReference="_102041_/l2/collab-spliter.ts" enhancement="_102041_/l2/enhancementCollab.ts"/>
 
 import { nothing } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { StateLitElement } from '/_102027_/l2/stateLitElement.js';
 
 interface ICollabSpliterItem extends HTMLElement { layout: Function; }
 
-@customElement('collab-spliter')
 export class CollabSpliter extends StateLitElement {
 
     @property({ attribute: 'msize' }) msize: string = '';
@@ -332,3 +331,5 @@ export class CollabSpliter extends StateLitElement {
         this.setAttribute('msplit-fullscreen', this._fullScreenData.join(','));
     }
 }
+
+window.addEventListener('mls:ready', () => customElements.define('collab-spliter', CollabSpliter), { once: true });

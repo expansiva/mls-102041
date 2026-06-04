@@ -64,7 +64,11 @@ import '/_102041_/l2/serviceStart.js';
 
         if (!window['mls']) return;
         const hasServiceWorkerInstalled = !!navigator.serviceWorker.controller;
-        await mls.stor.cache.installIfNeeded();
+        try {
+            await mls.stor.cache.installIfNeeded();
+        } catch (err: any) {
+            console.info('error on install service worker');
+        }
         const cookieLoginUser = mls.api.common.getCookie('loginUser');
         let isAnonymous: boolean = false;
 
@@ -73,6 +77,7 @@ import '/_102041_/l2/serviceStart.js';
         localStorage.setItem('collab_is_anonymous', isAnonymous.toString());
         initModoStart();
         configure();
+        window.dispatchEvent(new CustomEvent('mls:ready'));
 
         const res: any = await mls.api.cbeLogin();
         if (!res) return;

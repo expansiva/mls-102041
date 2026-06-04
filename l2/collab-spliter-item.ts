@@ -1,13 +1,12 @@
 /// <mls fileReference="_102041_/l2/collab-spliter-item.ts" enhancement="_102041_/l2/enhancementCollab.ts"/>
 
 import { nothing } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { StateLitElement } from '/_102027_/l2/stateLitElement.js';
 import type { CollabNav3 } from '/_102041_/l2/collab-nav-3.js';
 import type { CollabNav2 } from '/_102041_/l2/collab-nav-2.js';
 
 
-@customElement('collab-spliter-item')
 export class CollabSpliterItem extends StateLitElement {
 
     @property({ attribute: 'msize' }) msize: string = '';
@@ -38,3 +37,5 @@ export class CollabSpliterItem extends StateLitElement {
     }
 
 }
+
+window.addEventListener('mls:ready', () => customElements.define('collab-spliter-item', CollabSpliterItem), { once: true });
