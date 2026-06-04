@@ -59,7 +59,6 @@ export class CollabStartL7 extends StateLitElement {
     firstUpdated(changedProperties: Map<PropertyKey, unknown>) {
         super.firstUpdated(changedProperties);
         this._setEvents();
-        this._loadIframe();
     }
 
     updated(changed: Map<string, unknown>) {
