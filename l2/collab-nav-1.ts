@@ -77,7 +77,7 @@ export class CollabNav1 extends StateLitElement {
     private _servicesDetailsArr: Record<string, any> = {};
     private _cacheInstancePromise: Promise<Cache> | null = null;
     private _cacheKeysPromise: Promise<readonly Request[]> | null = null;
-    private readonly _staticService = ['_100529_service_start', '_100529_service_home'];
+    private readonly _staticService = ['_102041_serviceStart'];
 
     public openService(service: string, position: 'left' | 'right', level: number, args?: Record<string, string>) {
         return this._openService(service, position, level, args);
@@ -392,10 +392,14 @@ export class CollabNav1 extends StateLitElement {
         return l2[widget]['service_details'];
     }
 
-    private _getDetailsServiceStaticMls1(widget: string): INav1Service | undefined {
-        const l4 = (window as any).l4_html;
-        if (!l4?.[widget]) return undefined;
-        return l4[widget]['details'];
+    private async _getDetailsServiceStaticMls1(widget: string): Promise<INav1Service | undefined> {
+        const service = await import('/' + widget)
+        if(!service) return;
+        const className = Object.keys(service)[0];
+        if(!className) return;
+        const temp = new service[className]();
+        if(!temp || !temp.details) return;
+        return temp.details;
     }
 
     private async _getCacheInstance(): Promise<Cache> {
@@ -454,7 +458,7 @@ export class CollabNav1 extends StateLitElement {
     }
 
     private _prepareServicesByConfigProject(servicesByConfig: IServicesByProjectConfig, userPreferences: any[]): INav1CollabServiceData {
-        const staticStart = { icon: '', isStatic: false, state: 'foreground', tooltip: '', visible: true, widget: '_100529_service_start' };
+        const staticStart = { icon: '', isStatic: false, state: 'foreground', tooltip: '', visible: true, widget: '_102041_serviceStart' };
         const _cfg = servicesByConfig || { services: [] };
         const parsedConfig = this._parseJsonServicesByConfig(_cfg);
         const parsedPrefs = this._prepareJSONServiceData(userPreferences);
