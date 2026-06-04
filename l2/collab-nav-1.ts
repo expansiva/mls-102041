@@ -31,6 +31,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { StateLitElement } from '/_102027_/l2/stateLitElement.js';
 
+
 type ToolbarLevelStatus = 'start' | 'anonymous' | 'enabled' | 'disabled';
 type INav1Type = 'tab' | 'notification' | 'user';
 
@@ -411,14 +412,23 @@ export class CollabNav1 extends StateLitElement {
         return l2[widget]['service_details'];
     }
 
-    private async _getDetailsServiceStaticMls1(widget: string): Promise<INav1Service | undefined> {
-        const service = await import('/' + widget)
-        if (!service) return;
-        const className = Object.keys(service)[0];
-        if (!className) return;
-        const temp = new service[className]();
-        if (!temp || !temp.details) return;
-        return temp.details;
+     private _convertFileNameToTag(widget: string): string {
+        const match = widget.match(/_([0-9]+)_(.*)/);
+        if (match) {
+            const [, number, rest] = match;
+            const converted = rest.replace(/([A-Z])/g, '-$1').toLowerCase();
+            widget = `${converted}-${number}`;
+        }
+        if (widget.startsWith('-')) widget = widget.substring(1);
+        return widget;
+    }
+
+    private async _getDetailsServiceStaticMls1(widget: string): Promise<INav1Service | undefined> { 
+        const tag = this._convertFileNameToTag(widget);
+        const _temp: any = document.createElement(tag);
+        if(!_temp) return;
+        if(!_temp.details) return;
+        return _temp.details;
     }
 
     private async _getCacheInstance(): Promise<Cache> {
