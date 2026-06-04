@@ -83,42 +83,7 @@ export class CollabNav3Menu extends StateLitElement {
 
     private msg: MessageType = messages['en'];
 
-    private _menu: IServiceMenu | undefined = {
-    title: 'Example',
-    main: {},
-    tools: {
-      darkLight: {
-        type: 'cycle',
-        selected: 0,
-        options: [
-          { text: 'Light', icon: 'f185' },
-          { text: 'Dark', icon: 'f186' },
-        ]
-      },
-      languages: {
-        type: 'dropdown',
-        selected: 0,
-        options: []
-      },
-      watchPreview: {
-        type: 'cycle',
-        selected: 0,
-        options: [
-          { text: 'Run', icon: 'f04c' },
-          { text: 'Pause', icon: 'f04b' },
-        ]
-      },
-    },
-    tabs: {
-      group: 'Mode',
-      type: 'full',
-      selected: 0,
-      options: [
-        { text: 'Desktop', icon: 'f390' },
-        { text: 'Mobile', icon: 'f3cf' },
-      ]
-    }
-  }
+    private _menu: IServiceMenu | undefined = undefined;
     private _isInternalAboutLastOpened: boolean = false;
     private _lastTitle: string = '';
 
