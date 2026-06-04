@@ -4,8 +4,8 @@ import { nothing } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { ServiceBase, IService, IServiceMenu, IToolbarContent } from '/_102027_/l2/serviceBase.js';
 
-@customElement('service-start-100529')
-export class ServiceStart100529 extends ServiceBase {
+@customElement('service-start-102041')
+export class ServiceStart extends ServiceBase {
 
     public details: IService = {
         icon: '&#xf059',
@@ -13,7 +13,7 @@ export class ServiceStart100529 extends ServiceBase {
         tooltip: 'Start',
         visible: true,
         position: 'left',
-        widget: '_100529_service_start',
+        widget: '_102041_serviceStart',
         level: [0, 1, 2, 3, 4, 5, 6, 7],
     };
 
@@ -30,7 +30,7 @@ export class ServiceStart100529 extends ServiceBase {
             else if (this.menu.setMode) this.menu.setMode('initial');
         },
         onClickTabs: (index: number) => {
-            if (_ETabs[index] === 'icCollab') this._showStart();
+            if (ETabs[index] === 'icCollab') this._showStart();
         },
     };
 
@@ -131,7 +131,7 @@ export class ServiceStart100529 extends ServiceBase {
         if (this.menu.tabs !== undefined) this.menu.tabs = undefined;
         if (this.menu.refresh) this.menu.refresh();
         if (this.menu.closeMenu) this.menu.closeMenu();
-        if (this.menu.setTabActive) this.menu.setTabActive(_ETabs.icCollab);
+        if (this.menu.setTabActive) this.menu.setTabActive(ETabs.icCollab);
 
         if (this._lastLevel === this.level) return;
         this._lastLevel = this.level;
@@ -184,7 +184,7 @@ export class ServiceStart100529 extends ServiceBase {
     }
 }
 
-const enum _ETabs {
+enum ETabs {
     icCollab = 0,
     icProduct = 1,
     icSolution = 2,

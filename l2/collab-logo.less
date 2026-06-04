@@ -1,0 +1,59 @@
+/// <mls fileReference="_102041_/l2/collab-logo.less" enhancement="_blank"/>
+
+collab-logo {  
+    --width: 100px; 
+    --height: 100px; 
+    --width-container: 140px; 
+    --height-container: 140px; 
+    --animation-delay: 2s; 
+    --animation-duration: 2s; 
+    --letter-thickness: 20px; 
+    display: block;
+    .logo {
+
+        position: relative;
+        width: var(--width-container);
+        height: var(--height-container);
+    }
+
+    .letter {
+        position: absolute;
+        width: var(--width);
+        height: var(--height);
+        border-radius: 50%;
+        clip-path: inset(0 0 0 50%);
+    }
+
+    .c1 {
+        border: var(--letter-thickness) solid #4285F4;
+        transform: scaleX(-1);
+    }
+
+    .c2 {
+        border: var(--letter-thickness) solid #EA4335;
+        transform: translateX(70px) scaleX(-1);
+        position: relative;
+        animation: moveC2 var(--animation-duration) ease forwards var(--animation-delay);
+    }
+
+    @keyframes moveC2 {
+        0% {
+            transform: translateX(70px) scaleX(-1);
+            opacity: 1;
+        }
+        25% {
+            transform: translateX(90px);
+            opacity: 0.4;
+        }
+        75% {
+            transform: translateX(0) scaleX(1);
+            opacity: 0.6;
+        }
+        100% {
+            transform: translateX(0) scaleX(1);
+            opacity: 1;
+        }
+    }
+}
+
+

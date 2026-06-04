@@ -330,26 +330,47 @@ export class CollabNav1 extends StateLitElement {
         const servicesDetails: { details: INav1Service }[] = [];
         const servicesPromises: any[] = [];
 
-        Object.entries(data).forEach(([level, services]: [string, any]) => {
-            Object.keys(services).forEach(position => {
-                services[position].forEach((service: INav1CollabService3) => {
+        for (const [level, services] of Object.entries(data) as [string, any][]) {
+            for (const position of Object.keys(services)) {
+                for (const service of services[position]) {
+
                     mls?.actual?.[0]?.setFullName(service.widget);
+
                     const { path, project } = mls?.actual?.[0] || {};
                     const driver = (mls?.l5?.getProjectSettings?.(project) as any)?.projectDriver;
+
                     if (!this._servicesDetailsArr[service.widget]) {
+
                         if (this._staticService.includes(service.widget)) {
-                            const _det = this._getDetailsServiceStaticMls1(service.widget);
-                            if (_det) servicesDetails.push({ details: _det });
-                        } else if (!driver) {
-                            const _det = this._getDetailsServiceMls1(service.widget);
-                            if (_det) servicesDetails.push({ details: _det });
+                            const _det = await this._getDetailsServiceStaticMls1(service.widget);
+
+                            if (_det) {
+                                servicesDetails.push({ details: _det });
+                            }
                         }
-                        else servicesPromises.push(this._getDetailsServiceCollabInJS3(level, position, project, path));
+                        else if (!driver) {
+                            const _det = this._getDetailsServiceMls1(service.widget);
+
+                            if (_det) {
+                                servicesDetails.push({ details: _det });
+                            }
+                        }
+                        else {
+                            servicesPromises.push(
+                                this._getDetailsServiceCollabInJS3(
+                                    level,
+                                    position,
+                                    project,
+                                    path
+                                )
+                            );
+                        }
+
                         this._servicesDetailsArr[service.widget] = {};
                     }
-                });
-            });
-        });
+                }
+            }
+        }
 
         const results = await Promise.allSettled(servicesPromises);
         results.forEach((r: any) => {
@@ -394,11 +415,11 @@ export class CollabNav1 extends StateLitElement {
 
     private async _getDetailsServiceStaticMls1(widget: string): Promise<INav1Service | undefined> {
         const service = await import('/' + widget)
-        if(!service) return;
+        if (!service) return;
         const className = Object.keys(service)[0];
-        if(!className) return;
+        if (!className) return;
         const temp = new service[className]();
-        if(!temp || !temp.details) return;
+        if (!temp || !temp.details) return;
         return temp.details;
     }
 
