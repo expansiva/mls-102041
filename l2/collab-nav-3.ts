@@ -205,30 +205,36 @@ export class CollabNav3 extends StateLitElement {
         mls?.actual?.[0]?.setFullName(service);
         const { project, path } = mls?.actual?.[0] || {};
         const tagService = this._convertFileNameToTag(service);
-        const script = document.createElement('script');
-        script.type = 'module'; script.async = true;
-        script.src = `/_${project}_/l2/${path}.js`;
         content.innerHTML = '';
-        content.appendChild(script);
+
+        const attach = (wc: HTMLElement) => {
+            wc.setAttribute('level', level ? String(level) : this.level);
+            wc.setAttribute('position', this.position);
+            content.appendChild(wc);
+            this._createToolbarService(content, wc);
+            if (exec && !(wc.getAttribute('visible') === 'true')) wc.setAttribute('visible', String(exec));
+        };
+
         const serviceWc = document.createElement(tagService);
         this._state[this.position][service] = serviceWc;
         if (mls?.setServices) mls.setServices(`${service.substring(1)}_${this.position}`, serviceWc);
 
+        if (customElements.get(tagService)) {
+            attach(serviceWc);
+            return;
+        }
+
         const promises = this._checkTagsAndInstanciate(service);
         const promise: Promise<void> = new Promise((resolve, reject) => {
-            script.onload = () => {
-                serviceWc.setAttribute('level', level ? String(level) : this.level);
-                serviceWc.setAttribute('position', this.position);
-                content.appendChild(serviceWc);
-                this._createToolbarService(content, serviceWc);
-                if (exec && !(serviceWc.getAttribute('visible') === 'true')) serviceWc.setAttribute('visible', String(exec));
-                resolve();
-            };
+            const script = document.createElement('script');
+            script.type = 'module'; script.async = true;
+            script.src = `/_${project}_/l2/${path}.js`;
+            content.appendChild(script);
+            script.onload = () => { attach(serviceWc); resolve(); };
             script.onerror = () => {
                 this._createToolbarService(content);
                 const key = mls?.stor?.getKeyToFiles(project || 0, 2, path || '', '', '.ts');
-                const err = `File: ${key} don't exist`;
-                reject(new Error(err));
+                reject(new Error(`File: ${key} don't exist`));
             };
         });
         promises.push(promise);

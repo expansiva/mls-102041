@@ -129,11 +129,13 @@ export class CollabNav2 extends StateLitElement {
     async updated(changed: Map<string, unknown>) {
         if (changed.has('level')) {
             await this._renderServiceByLevel();
+            await this.updateComplete;
             this._onStatusChanged();
         }
         if (changed.has('status') && this.status === 'start') this._onStatusChanged();
         if (changed.has('status') && this.status === 'enabled') {
             await this._renderAfterEnabled();
+            await this.updateComplete;
             this._onStatusChanged();
         }
         this._setShortCuts();
@@ -164,14 +166,14 @@ export class CollabNav2 extends StateLitElement {
             <collab-nav-2-item
                 data-service="${item.widget}"
                 data-tooltip="${item.tooltip}"
-                ?isstatic="${item.isStatic}"
+                isstatic="${item.isStatic}"
                 visible="${item.visible}"
                 class=${classMap({
-                    notification: !!this._badgesState[item.widget],
-                    [item.classname || '']: !!item.classname,
-                    enabled: false,
-                    disabled: false,
-                })}
+            notification: !!this._badgesState[item.widget],
+            [item.classname || '']: !!item.classname,
+            enabled: false,
+            disabled: false,
+        })}
                 style="${item.visible ? '' : 'display:none'}"
                 @click=${() => this._onItemClick(item)}>
                 <i class="fa">${unsafeHTML(item.icon)}</i>
@@ -196,12 +198,11 @@ export class CollabNav2 extends StateLitElement {
         const lastSelected = this.querySelector('collab-nav-2-item.selected')?.getAttribute('data-service');
         this.querySelectorAll('collab-nav-2-item').forEach(i => i.classList.remove('selected'));
         el.classList.add('selected');
-        
-        if (mls?.setActualService) mls.setActualService(service);
-        if (mls?.setActualPosition) mls.setActualPosition(this.position);
         this._verifyControllers();
         this._fireToolbarSelected(service, lastSelected || '');
         this._fireSelectedChangeNav3(service);
+        if (mls?.setActualService) mls.setActualService(service);
+        if (mls?.setActualPosition) mls.setActualPosition(this.position);
     }
 
     private _fireToolbarSelected(to: string, from: string) {
