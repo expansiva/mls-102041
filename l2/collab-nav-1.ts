@@ -241,7 +241,7 @@ export class CollabNav1 extends StateLitElement {
         this._activeIndex = idx;
         this._lastActive = idx;
         this.setAttribute('tabindexactive', String(idx));
-        if (mls?.setActualLevel) mls.setActualLevel(this.actualLevel as mls.Level );
+        if (mls?.setActualLevel) mls.setActualLevel(this.actualLevel as mls.Level);
         this._fireChangeLevel(lastLevel);
     }
 
@@ -257,8 +257,8 @@ export class CollabNav1 extends StateLitElement {
         nav2Right.setAttribute('status', 'start'); nav2Left.setAttribute('status', 'start');
         nav2Right.setAttribute('level', String(this.actualLevel)); nav2Left.setAttribute('level', String(this.actualLevel));
 
-        const levelCollab = `l${this.actualLevel}`;
-        if (mls?.[levelCollab]?.init) mls[levelCollab].init('enterLevel');
+        const levelCollab = `l${this.actualLevel}` as 'l1' | 'l2' | 'l3' | 'l4' | 'l5' | 'l6' | 'l7';
+        mls[levelCollab].init('enterLevel');
 
         const params = { from: lastLevel, to: this.actualLevel };
         if (this._levelAlreadyReady[this.actualLevel]) {
@@ -308,8 +308,8 @@ export class CollabNav1 extends StateLitElement {
     }
 
     private async _checkIsAllLoaded(level: number) {
-        const levelCollab = `l${level}`;
-        if (mls?.[levelCollab]?.init) mls[levelCollab].init('preLoading');
+        const levelCollab = `l${level}` as 'l1' | 'l2' | 'l3' | 'l4' | 'l5' | 'l6' | 'l7';;
+        mls[levelCollab].init('preLoading');
     }
 
     private async _prepareServices() {
@@ -332,37 +332,40 @@ export class CollabNav1 extends StateLitElement {
                     mls?.actual?.[0]?.setFullName(service.widget);
 
                     const { path, project } = mls?.actual?.[0] || {};
-                    const driver = (mls?.l5?.getProjectSettings?.(project) as any)?.projectDriver;
+                    if (project && path) {
+                        const driver = (mls?.l5?.getProjectSettings?.(project) as any)?.projectDriver;
 
-                    if (!this._servicesDetailsArr[service.widget]) {
+                        if (!this._servicesDetailsArr[service.widget]) {
 
-                        if (this._staticService.includes(service.widget)) {
-                            const _det = await this._getDetailsServiceStaticMls1(service.widget);
+                            if (this._staticService.includes(service.widget)) {
+                                const _det = await this._getDetailsServiceStaticMls1(service.widget);
 
-                            if (_det) {
-                                servicesDetails.push({ details: _det });
+                                if (_det) {
+                                    servicesDetails.push({ details: _det });
+                                }
                             }
-                        }
-                        else if (!driver) {
-                            const _det = this._getDetailsServiceMls1(service.widget);
+                            else if (!driver) {
+                                const _det = this._getDetailsServiceMls1(service.widget);
 
-                            if (_det) {
-                                servicesDetails.push({ details: _det });
+                                if (_det) {
+                                    servicesDetails.push({ details: _det });
+                                }
                             }
-                        }
-                        else {
-                            servicesPromises.push(
-                                this._getDetailsServiceCollabInJS3(
-                                    level,
-                                    position,
-                                    project,
-                                    path
-                                )
-                            );
-                        }
+                            else {
+                                servicesPromises.push(
+                                    this._getDetailsServiceCollabInJS3(
+                                        level,
+                                        position,
+                                        project,
+                                        path
+                                    )
+                                );
+                            }
 
-                        this._servicesDetailsArr[service.widget] = {};
+                            this._servicesDetailsArr[service.widget] = {};
+                        }
                     }
+
                 }
             }
         }
