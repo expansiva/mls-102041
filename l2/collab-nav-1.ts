@@ -100,8 +100,8 @@ export class CollabNav1 extends StateLitElement {
     updated(changed: Map<string, unknown>) {
         if (changed.has('tabindexactive')) {
             const oldVal = changed.get('tabindexactive') as string;
-            if (oldVal === '5' && (window as any).mls?.stor?.cache?.['clearObsoleteCache']) {
-                (window as any).mls.stor.cache['clearObsoleteCache']();
+            if (oldVal === '5' && mls?.stor?.cache?.['clearObsoleteCache']) {
+                mls.stor.cache['clearObsoleteCache']();
             }
             if (this._lastActive !== this.tabActive) this._activeMe(this.tabActive);
         }
@@ -241,7 +241,7 @@ export class CollabNav1 extends StateLitElement {
         this._activeIndex = idx;
         this._lastActive = idx;
         this.setAttribute('tabindexactive', String(idx));
-        if ((window as any).mls?.setActualLevel) (window as any).mls['setActualLevel'](this.actualLevel);
+        if (mls?.setActualLevel) mls.setActualLevel(this.actualLevel as mls.Level );
         this._fireChangeLevel(lastLevel);
     }
 
@@ -257,26 +257,24 @@ export class CollabNav1 extends StateLitElement {
         nav2Right.setAttribute('status', 'start'); nav2Left.setAttribute('status', 'start');
         nav2Right.setAttribute('level', String(this.actualLevel)); nav2Left.setAttribute('level', String(this.actualLevel));
 
-        const mls = (window as any).mls;
         const levelCollab = `l${this.actualLevel}`;
         if (mls?.[levelCollab]?.init) mls[levelCollab].init('enterLevel');
 
         const params = { from: lastLevel, to: this.actualLevel };
         if (this._levelAlreadyReady[this.actualLevel]) {
             await this._prepareServices();
-            mls?.events?.fire([this.actualLevel], ['LevelChanged'], JSON.stringify(params));
+            mls?.events?.fire([this.actualLevel as mls.Level], ['LevelChanged'] as any, JSON.stringify(params));
         } else {
             await this._checkIsAllLoaded(this.actualLevel);
             this._levelAlreadyReady[this.actualLevel] = true;
             await this._prepareServices();
-            mls?.events?.fire([this.actualLevel], ['LevelChanged'], JSON.stringify(params));
+            mls?.events?.fire([this.actualLevel as mls.Level], ['LevelChanged'] as any, JSON.stringify(params));
         }
         nav2Right.setAttribute('status', 'enabled'); nav2Left.setAttribute('status', 'enabled');
         collabSpliter?.setAttribute('level', String(this.actualLevel));
     }
 
     private async _changeStatus() {
-        const mls = (window as any).mls;
         if (this.status === 'start') {
             await Promise.all(['collab-nav-2', 'collab-nav-3'].map(wc => customElements.whenDefined(wc)));
             const page = document.querySelector('collab-page');
@@ -301,7 +299,6 @@ export class CollabNav1 extends StateLitElement {
     }
 
     private async _changeStatusIfAnonymous() {
-        const mls = (window as any).mls;
         await mls?.stor?.server?.loadProjectInfoIfNeeded(this.project);
         this._activeMe(this.tabActive);
         const tabLevel7El = this.querySelector('nav-1-item[level="7"]');
@@ -311,7 +308,6 @@ export class CollabNav1 extends StateLitElement {
     }
 
     private async _checkIsAllLoaded(level: number) {
-        const mls = (window as any).mls;
         const levelCollab = `l${level}`;
         if (mls?.[levelCollab]?.init) mls[levelCollab].init('preLoading');
     }
@@ -326,7 +322,6 @@ export class CollabNav1 extends StateLitElement {
     }
 
     private async _mergeData(data: INav1CollabServiceData, actualLevel: number): Promise<INav1CollabServiceData> {
-        const mls = (window as any).mls;
         const servicesDetails: { details: INav1Service }[] = [];
         const servicesPromises: any[] = [];
 

@@ -196,7 +196,7 @@ export class CollabNav2 extends StateLitElement {
         const lastSelected = this.querySelector('collab-nav-2-item.selected')?.getAttribute('data-service');
         this.querySelectorAll('collab-nav-2-item').forEach(i => i.classList.remove('selected'));
         el.classList.add('selected');
-        const mls = (window as any).mls;
+        
         if (mls?.setActualService) mls.setActualService(service);
         if (mls?.setActualPosition) mls.setActualPosition(this.position);
         this._verifyControllers();
@@ -206,7 +206,7 @@ export class CollabNav2 extends StateLitElement {
 
     private _fireToolbarSelected(to: string, from: string) {
         const params = { level: this.level, position: this.position, from, to };
-        (window as any).mls?.events?.fire([this.level], ['ToolBarSelected'], JSON.stringify(params));
+        mls?.events?.fire([this.level as mls.Level], ['ToolBarSelected'], JSON.stringify(params));
     }
 
     private _fireSelectedChangeNav3(service: string, nav2?: HTMLElement) {

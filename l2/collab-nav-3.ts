@@ -202,7 +202,6 @@ export class CollabNav3 extends StateLitElement {
 
     private async _instanceCollabService(service: string, content: HTMLElement, exec: boolean, level?: number) {
 
-        const mls = (window as any).mls;
         mls?.actual?.[0]?.setFullName(service);
         const { project, path } = mls?.actual?.[0] || {};
         const tagService = this._convertFileNameToTag(service);
@@ -257,7 +256,6 @@ export class CollabNav3 extends StateLitElement {
         if (ClassDef) {
             const instance = new ClassDef(content, level || parseInt(this.level, 10), this.position);
             this._state[this.position][service] = instance;
-            const mls = (window as any).mls;
             if (mls?.setServices) mls.setServices(`${service}_${this.position}`, instance);
             if (exec) instance.onServiceClick?.({});
         }
