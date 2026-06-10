@@ -24,7 +24,7 @@ interface INav3State { left: Record<string, HTMLElement | any>; right: Record<st
 
 export class CollabNav3 extends StateLitElement {
 
-    @property({ attribute: 'data-service' }) dataService: string = '';
+    @property({ attribute: 'data-service', hasChanged: () => true }) dataService: string = '';
     @property({ attribute: 'level' }) level: string = '';
     @property({ attribute: 'status' }) status: string = '';
     @property({ attribute: 'msize' }) msize: string = '';
