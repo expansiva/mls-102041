@@ -63,7 +63,7 @@ export class CollabStartL7 extends StateLitElement {
 
     updated(changed: Map<string, unknown>) {
         super.updated(changed);
-        if (changed.has('mode') && changed.get('mode') !== undefined && changed.get('mode') !== '') {
+        if (changed.has('mode') && changed.get('mode') !== undefined && this.mode !== '') {
             this._loadIframe();
         }
         if (changed.has('msize')) {
