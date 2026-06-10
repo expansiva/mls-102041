@@ -150,8 +150,8 @@ export class CollabNav3Menu extends StateLitElement {
                         </div>
                     </div>
                 </div>
-                <ul class="menu-list" style="display:${this._menuChecked ? '' : 'none'}">
-                    ${this._menuChecked ? this._renderMenuList(menu) : nothing}
+                <ul class="menu-list" style="display:${this._menuChecked && !this._actionPage ? '' : 'none'}">
+                    ${this._menuChecked && !this._actionPage ? this._renderMenuList(menu) : nothing}
                 </ul>
                 <div class="collab-nav-3-menu-action" style="display:${this._actionPage ? 'block' : 'none'}">
                     ${this._actionPage ? html`${this._actionPage}` : nothing}
@@ -326,7 +326,7 @@ export class CollabNav3Menu extends StateLitElement {
             this._menuChecked = true;
         } else if (mode === 'page') {
             this._actionPage = page;
-            this._menuChecked = false;
+            this._menuChecked = true;
             this._hideSibling();
         }
     }
