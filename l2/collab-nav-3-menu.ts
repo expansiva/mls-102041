@@ -142,7 +142,7 @@ export class CollabNav3Menu extends StateLitElement {
                         </ul>
                         <div class=${classMap({ title: true, 'menu-hidden': this._hiddenEls.has('title') })}
                              @click=${this._onTitleClick}>
-                            ${this._activeTitle.icon ? html`<i class=${this._faClass(this._activeTitle.icon)}>${unsafeHTML('&#x' + this._activeTitle.icon)}</i>` : nothing}
+                            ${this._activeTitle.icon ? html`<i class=${this._faClass(this._toHex(this._activeTitle.icon))}>${unsafeHTML('&#x' + this._toHex(this._activeTitle.icon))}</i>` : nothing}
                             ${menu.onClickTitle ? html`<div>${this._activeTitle.text}</div>` : html`<span>${this._activeTitle.text}</span>`}
                         </div>
                         <div class=${classMap({ tools: true, 'menu-hidden': this._hiddenEls.has('tools') })}>
@@ -467,11 +467,16 @@ export class CollabNav3Menu extends StateLitElement {
         this._hiddenEls = next;
     }
 
+    private _toHex(icon: string): string {
+        return icon.startsWith('&#x') ? icon.slice(3).replace(';', '') : icon;
+    }
+
     private _iconTpl(str?: string, className?: string, extraClass = '') {
         const cls = [className || '', extraClass].filter(Boolean).join(' ');
         if (!str) return html`<i class="${cls}"></i>`;
         if (str.trim().startsWith('<svg')) return html`<span class="${cls}">${unsafeHTML(str)}</span>`;
-        return html`<i class="${this._faClass(str)} ${cls}">${unsafeHTML('&#x' + str)}</i>`;
+        const hex = this._toHex(str);
+        return html`<i class="${this._faClass(hex)} ${cls}">${unsafeHTML('&#x' + hex)}</i>`;
     }
 
     private _faClass(unicode: string): string {
