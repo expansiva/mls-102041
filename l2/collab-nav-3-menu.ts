@@ -94,7 +94,10 @@ export class CollabNav3Menu extends StateLitElement {
     }
 
     updated(changed: Map<string, unknown>) {
-        if (changed.has('_menuChecked')) this._layoutNav3();
+        if (changed.has('_menuChecked')) {
+            this._layoutNav3();
+            this._layoutEditor();
+        }
         if (changed.has('msize')) {
             const [width] = this.msize.split(',');
             const ul = this.querySelector('.menu-list') as HTMLElement;
@@ -415,6 +418,11 @@ export class CollabNav3Menu extends StateLitElement {
     private _layoutNav3() {
         const nav3 = this.closest('collab-nav-3') as any;
         if (nav3?.layout) nav3.layout();
+    }
+
+    private _layoutEditor(){
+        const editor = this.nextElementSibling.querySelector('collab-editor') as HTMLElement;
+        if(editor) editor.setAttribute('msize', this.msize);
     }
 
     private _getMenuOptions(): IServiceMenu | undefined {
