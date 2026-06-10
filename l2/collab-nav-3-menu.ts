@@ -239,6 +239,7 @@ export class CollabNav3Menu extends StateLitElement {
     private _onHamburgerChange = (e: Event) => {
         this._menuChecked = (e.target as HTMLInputElement).checked;
         if (!this._menuChecked) {
+            if (this._actionPage) this._showSibling();
             this._actionPage = undefined;
             this._lastMode = 'initial';
             if (this._isInternalAboutLastOpened) {
@@ -252,6 +253,9 @@ export class CollabNav3Menu extends StateLitElement {
                 if (menu.onClickMain && menu.mainDefault && !this._menuChecked) menu.onClickMain(menu.mainDefault);
                 if (menu.tabs !== undefined) this._selectTab(menu.tabs.selected ?? 0);
             }
+        } else if (this._actionPage) {
+            this._actionPage = undefined;
+            this._showSibling();
         }
         this._layoutNav3();
     };
@@ -314,14 +318,27 @@ export class CollabNav3Menu extends StateLitElement {
         this._lastMode = mode;
         if (mode === 'initial') {
             this._menuChecked = false;
+            if (this._actionPage) this._showSibling();
+            this._actionPage = undefined;
             const menu = this._getMenuOptions();
             if (menu) this._activeTitle = { ...(typeof menu.title === 'string' ? { text: menu.title, icon: '' } : (menu.title as IOptions)) };
         } else if (mode === 'editor') {
             this._menuChecked = true;
         } else if (mode === 'page') {
             this._actionPage = page;
-            this._menuChecked = true;
+            this._menuChecked = false;
+            this._hideSibling();
         }
+    }
+
+    private _hideSibling() {
+        const sibling = this.nextElementSibling as HTMLElement;
+        if (sibling) sibling.style.display = 'none';
+    }
+
+    private _showSibling() {
+        const sibling = this.nextElementSibling as HTMLElement;
+        if (sibling) sibling.style.display = '';
     }
 
     private _updateTitle() {
