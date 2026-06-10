@@ -94,6 +94,7 @@ export class CollabNav3Menu extends StateLitElement {
     }
 
     updated(changed: Map<string, unknown>) {
+        if (changed.has('_menuChecked')) this._layoutNav3();
         if (changed.has('msize')) {
             const [width] = this.msize.split(',');
             const ul = this.querySelector('.menu-list') as HTMLElement;
@@ -257,7 +258,6 @@ export class CollabNav3Menu extends StateLitElement {
             this._actionPage = undefined;
             this._showSibling();
         }
-        this._layoutNav3();
     };
 
     private _onTabClick(index: number) {
