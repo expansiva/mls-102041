@@ -420,9 +420,10 @@ export class CollabNav3Menu extends StateLitElement {
         if (nav3?.layout) nav3.layout();
     }
 
-    private _layoutEditor(){
-        const editor = this.nextElementSibling.querySelector('collab-editor') as HTMLElement;
-        if(editor) editor.setAttribute('msize', this.msize);
+    private _layoutEditor() {
+        const editor = this.nextElementSibling?.querySelector('collab-monaco-editor-102027') as HTMLElement;
+        const msize = editor?.getAttribute('msize');
+        if (editor && msize) editor.setAttribute('msize', msize);
     }
 
     private _getMenuOptions(): IServiceMenu | undefined {

@@ -49,7 +49,10 @@ collab-nav-2 {
             &.enabled { pointer-events: all; cursor: pointer; }
             &.disabled { pointer-events: none; cursor: not-allowed; color: #cecece; }
 
-            i { min-width: 30px; }
+            i { 
+                min-width: 30px;
+                position: relative;
+           }
 
             &.notification i::after {
                 content: '*';
