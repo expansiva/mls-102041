@@ -424,6 +424,7 @@ export class CollabNav3Menu extends StateLitElement {
         const editor = this.nextElementSibling?.querySelector('collab-monaco-editor-102027') as HTMLElement;
         const msize = editor?.getAttribute('msize');
         if (editor && msize) editor.setAttribute('msize', msize);
+        
     }
 
     private _getMenuOptions(): IServiceMenu | undefined {
