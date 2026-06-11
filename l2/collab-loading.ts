@@ -6,7 +6,6 @@ import { StateLitElement } from '/_102027_/l2/stateLitElement.js';
 
 @customElement('collab-loading')
 export class CollabLoading extends StateLitElement {
-
     render() {
         return html`
             <div class="loading">
