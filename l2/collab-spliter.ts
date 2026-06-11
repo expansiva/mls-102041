@@ -12,6 +12,7 @@ export class CollabSpliter extends StateLitElement {
     @property({ attribute: 'msplit' }) msplit: string = '';
     @property({ attribute: 'level' }) level: string = '';
     @property({ attribute: 'msplit-fullscreen' }) msplitFullscreen: string = '';
+    @property({ attribute: 'fixed', type: Boolean }) fixed: boolean = false;
 
     get defaultLeftPanelWidthPercent() { return +(this.getAttribute('defaultleft') || '50'); }
     get defaultRightPanelWidthPercent() { return +(this.getAttribute('defaultright') || '50'); }
@@ -74,6 +75,7 @@ export class CollabSpliter extends StateLitElement {
             this._updateSizePanelsOnSplitChange(parseFloat(wL), parseFloat(wR));
             this._savePreferencesByLevel(this.msplit);
         }
+        if (changed.has('fixed') && this._resizerSplitter) this._createSeparator();
     }
 
     private _createSeparator(): HTMLElement {
@@ -152,35 +154,43 @@ export class CollabSpliter extends StateLitElement {
             if (this._actualPanelsWidth.leftPanel < 1) leftPanel.classList.add('hidden');
         };
 
-        this._resizerSplitter.onmousedown = (e) => {
-            isMobile = false;
-            document.addEventListener('mousemove', resize);
-            document.addEventListener('mouseup', onMouseUp);
-            e.preventDefault();
-        };
+        if (!this.fixed) {
+            this._resizerSplitter.onmousedown = (e) => {
+                isMobile = false;
+                document.addEventListener('mousemove', resize);
+                document.addEventListener('mouseup', onMouseUp);
+                e.preventDefault();
+            };
 
-        this._resizerSplitter.ontouchstart = (e) => {
-            e.preventDefault(); isMobile = true; lastPageX = undefined;
-            document.addEventListener('mousemove', resize);
-            document.addEventListener('mouseup', onMouseUp);
-            document.addEventListener('touchstart', touch2Mouse, true);
-            document.addEventListener('touchmove', touch2Mouse, true);
-            document.addEventListener('touchend', touch2Mouse, true);
-        };
+            this._resizerSplitter.ontouchstart = (e) => {
+                e.preventDefault(); isMobile = true; lastPageX = undefined;
+                document.addEventListener('mousemove', resize);
+                document.addEventListener('mouseup', onMouseUp);
+                document.addEventListener('touchstart', touch2Mouse, true);
+                document.addEventListener('touchmove', touch2Mouse, true);
+                document.addEventListener('touchend', touch2Mouse, true);
+            };
 
-        this._resizerSplitter.ondblclick = () => {
-            const leftPanel = this._leftPanel;
-            const rightPanel = this._rightPanel;
-            if (!leftPanel || !rightPanel) return;
-            const level = +(this.getAttribute('level') || '7');
-            if (this._fullScreenData[level]) {
-                this._fullScreenData[level] = '';
-                this._setMSplitFullScreen();
-            }
-            leftPanel.classList.remove('closed');
-            rightPanel.classList.remove('closed');
-            this._toogleDefaultWidth();
-        };
+            this._resizerSplitter.ondblclick = () => {
+                const leftPanel = this._leftPanel;
+                const rightPanel = this._rightPanel;
+                if (!leftPanel || !rightPanel) return;
+                const level = +(this.getAttribute('level') || '7');
+                if (this._fullScreenData[level]) {
+                    this._fullScreenData[level] = '';
+                    this._setMSplitFullScreen();
+                }
+                leftPanel.classList.remove('closed');
+                rightPanel.classList.remove('closed');
+                this._toogleDefaultWidth();
+            };
+        } else {
+            this._resizerSplitter.onmousedown = null;
+            this._resizerSplitter.ontouchstart = null;
+            this._resizerSplitter.ondblclick = null;
+        }
+
+        this._resizerSplitter.classList.toggle('fixed', this.fixed);
 
         return this._resizerSplitter;
     }
