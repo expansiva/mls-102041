@@ -14,6 +14,7 @@ const messages: { [key: string]: MessageType } = { en: message_en, pt: message_p
 import { nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { StateLitElement } from '/_102027_/l2/stateLitElement.js';
+import { SERVICE_START_WIDGET } from '/_102041_/l2/utils.js';
 
 type ICollabServiceState2 = 'foreground' | 'background';
 type ICollabServicePosition2 = 'left' | 'right';
@@ -195,8 +196,7 @@ export class CollabNav3 extends StateLitElement {
     }
 
     private async _instanceService(service: string, content: HTMLElement, exec: boolean, level?: number) {
-        if (this._isCollabService(service)) await this._instanceCollabService(service, content, exec, level);
-        else this._instanceMlsService(service, content, exec, level);
+        await this._instanceCollabService(service, content, exec, level);
     }
 
     private async _instanceCollabService(service: string, content: HTMLElement, exec: boolean, level?: number) {
@@ -243,27 +243,13 @@ export class CollabNav3 extends StateLitElement {
     private _createToolbarService(content: HTMLElement, instance?: HTMLElement) {
         if (instance) (content as any)['mlsWidget'] = instance;
         let menu: HTMLElement;
-        if ((instance as any)?.['menu'] && 'main' in (instance as any)['menu']) {
-            if ((instance as any)['menu'].enabled === false) return;
-            menu = document.createElement('collab-nav-3-menu');
-        } else menu = document.createElement('mls-nav3-100529');
+        const menuConfig = (instance as any)?.['menu'];
+        if (!menuConfig || menuConfig.enabled === false) return;
+        menu = document.createElement('collab-nav-3-menu');
         menu.setAttribute('is-mls2', 'true');
         menu.setAttribute('toolbarposition', this.position);
         if (instance) content.insertBefore(menu, instance);
         else content.appendChild(menu);
-    }
-
-    private _instanceMlsService(service: string, content: HTMLElement, exec: boolean, level?: number) {
-        const isStatic = this._isStatic(service);
-        const l2 = (window as any).l2_html;
-        const l4 = (window as any).l4_html;
-        const ClassDef = isStatic ? l4?.[service] : l2?.[service];
-        if (ClassDef) {
-            const instance = new ClassDef(content, level || parseInt(this.level, 10), this.position);
-            this._state[this.position][service] = instance;
-            if (mls?.setServices) mls.setServices(`${service}_${this.position}`, instance);
-            if (exec) instance.onServiceClick?.({});
-        }
     }
 
     private _checkTagsAndInstanciate(service: string): Promise<void>[] {
@@ -292,17 +278,6 @@ export class CollabNav3 extends StateLitElement {
         }
     }
 
-    private _isStatic(serviceName: string): boolean {
-        for (const level of Object.keys(this.actualServices)) {
-            for (const s of (this.actualServices[+level]?.[this.position] || [])) {
-                if (s.widget === serviceName) return s.isStatic;
-            }
-        }
-        return false;
-    }
-
-    private _isCollabService(service: string) { return !service.startsWith('_100529_'); }
-
     private _convertFileNameToTag(widget: string): string {
         const match = widget.match(/_([0-9]+)_(.*)/);
         if (match) {
@@ -324,19 +299,17 @@ export class CollabNav3 extends StateLitElement {
         if (!value) return;
         const activeService = this.querySelector(`collab-nav-3-service[data-service="${this.getAttribute('data-service')}"]`) as HTMLElement;
         if (!activeService) return;
-        const isMls = activeService.getAttribute('ismls') === 'true';
-        if (isMls) { this._layoutMls1(value, activeService); return; }
         const [width, height, top, left] = value.split(',');
         if (!width || !height || !top || !left) return;
         const children = Array.from(activeService.children);
-        let menu = activeService.querySelector('mls-nav3-100529') || activeService.querySelector('collab-nav-3-menu');
+        let menu = activeService.querySelector('collab-nav-3-menu');
         const mHeightMenu = +(menu?.getAttribute('mheight') || '0');
         const newHeight = +height - mHeightMenu;
         const newTop = +top + mHeightMenu;
         const msize = [width, newHeight.toFixed(2), newTop.toFixed(2), left].join(',');
         const msizeMenu = [width, mHeightMenu, newTop.toFixed(2), left].join(',');
         let service: Element | undefined | null = children.find(c => c.tagName.startsWith('SERVICE-'));
-        const isServiceStart = activeService.querySelector('div[data-service="_102041_serviceStart"]') as HTMLElement;
+        const isServiceStart = activeService.querySelector(`div[data-service="${SERVICE_START_WIDGET}"]`) as HTMLElement;
         if (isServiceStart) {
             isServiceStart.style.height = newHeight.toFixed(2) + 'px';
             service = activeService.querySelector('[data-service]');
@@ -344,25 +317,6 @@ export class CollabNav3 extends StateLitElement {
         if (!service) return;
         service.setAttribute('msize', msize);
         if (menu) { menu.setAttribute('msize', msizeMenu); menu.setAttribute('msize-height', newHeight.toFixed(2)); }
-    }
-
-    private _layoutMls1(value: string, activeService: HTMLElement) {
-        const [width, height, top, left] = value.split(',');
-        if (!width || !height || !top || !left) return;
-        this.style.height = height + 'px';
-        let mHeigth: string;
-        Array.from(activeService.children).forEach(el => {
-            const element = el as HTMLElement;
-            if (!element.tagName.toLowerCase().startsWith('mls-')) return;
-            let newHeight: string = '';
-            if (mHeigth) newHeight = (parseFloat(height) - parseFloat(mHeigth)).toString();
-            const isVisible = element.style.display !== 'none';
-            const elMHeight = isVisible ? element.getAttribute('mheight') : '0';
-            const myMHeigth = elMHeight || newHeight;
-            const myMTop = elMHeight ? top : (parseFloat(mHeigth || '0') + parseFloat(top)).toString();
-            element.setAttribute('msize', `${width},${myMHeigth},${myMTop},${left}`);
-            mHeigth = mHeigth ? (parseFloat(mHeigth) + parseFloat(myMHeigth)).toString() : myMHeigth;
-        });
     }
 
     override setAttribute(name: string, value: string) {

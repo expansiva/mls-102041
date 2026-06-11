@@ -3,6 +3,7 @@
 import { html, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { StateLitElement } from '/_102027_/l2/stateLitElement.js';
+import { COLLAB_LOGIN_PLUGIN, EXPLORE_PROJECTS_SERVICE } from '/_102041_/l2/utils.js';
 import '/_102041_/l2/collab-ticker.js';
 
 @customElement('collab-start-l7')
@@ -79,7 +80,7 @@ export class CollabStartL7 extends StateLitElement {
         if (this.mode === 'default' && params.has('signin')) {
             if (spliter) (spliter as any).setFullScreen(7, 'left');
         } else if (this.mode === 'anonymous') {
-            this._setDetailsInitialPlugin('_100554_pluginCollabLogin');
+            this._setDetailsInitialPlugin(COLLAB_LOGIN_PLUGIN);
             if (spliter) (spliter as any).setFullScreen(7, 'right');
         }
 
@@ -113,7 +114,7 @@ export class CollabStartL7 extends StateLitElement {
             if (action === 'login') {
                 const spliter = document.querySelector('collab-spliter');
                 if (this.mode === 'anonymous') {
-                    this._setDetailsInitialPlugin('_100554_pluginCollabLogin');
+                    this._setDetailsInitialPlugin(COLLAB_LOGIN_PLUGIN);
                     if (spliter) (spliter as any).setFullScreen(7, 'right');
                 } else {
                     const options = { shortName: 'pluginCollabLogin', project: 100554, htmlText: '' };
@@ -124,12 +125,12 @@ export class CollabStartL7 extends StateLitElement {
 
             if (action === 'create-project') {
                 const nav1 = document.querySelector('collab-page')?.querySelector('collab-nav-1') as any;
-                if (nav1) nav1.openService('_100554_serviceExploreProjects', 'left', 6, { currentScenario: 'add' });
+                if (nav1) nav1.openService(EXPLORE_PROJECTS_SERVICE, 'left', 6, { currentScenario: 'add' });
             }
 
             if (action === 'explore-projects') {
                 const nav1 = document.querySelector('collab-page')?.querySelector('collab-nav-1') as any;
-                if (nav1) nav1.openService('_100554_serviceExploreProjects', 'left', 6, { currentScenario: 'list' });
+                if (nav1) nav1.openService(EXPLORE_PROJECTS_SERVICE, 'left', 6, { currentScenario: 'list' });
             }
         });
     }

@@ -87,40 +87,42 @@ export class CollabSpliter extends StateLitElement {
         let isMobile = false;
 
         const resize = (event: MouseEvent) => {
-            if (!this._leftPanel || !this._rightPanel) return;
+            const leftPanel = this._leftPanel;
+            const rightPanel = this._rightPanel;
+            if (!leftPanel || !rightPanel) return;
             this._toogleIframePointerEvents(false);
             document.querySelectorAll('iframe').forEach(f => f.style.pointerEvents = 'none');
             if (isMobile && !lastPageX) { lastPageX = event.pageX; return; }
 
             const movePx = isMobile ? event.pageX - (lastPageX ?? 0) : event.movementX;
-            const pxLeft = this._leftPanel.clientWidth + movePx;
-            const pxRight = this._rightPanel.clientWidth - movePx;
+            const pxLeft = leftPanel.clientWidth + movePx;
+            const pxRight = rightPanel.clientWidth - movePx;
             const { width } = this.msizeObj;
             const wNoSep = width - this._separatorWidth;
 
-            if (pxLeft <= this.minLeftPxPanel && !this._leftPanel.classList.contains('closed')) {
+            if (pxLeft <= this.minLeftPxPanel && !leftPanel.classList.contains('closed')) {
                 this._actualPanelsWidth.rightPanel = width;
                 this._actualPanelsWidth.leftPanel = 0;
-                this._leftPanel.classList.add('closed', 'hidden');
+                leftPanel.classList.add('closed', 'hidden');
                 onMouseUp();
-            } else if (pxRight <= this.minRightPxPanel && !this._rightPanel.classList.contains('closed')) {
+            } else if (pxRight <= this.minRightPxPanel && !rightPanel.classList.contains('closed')) {
                 this._actualPanelsWidth.leftPanel = width - this._separatorWidth;
                 this._actualPanelsWidth.rightPanel = 0;
-                this._rightPanel.classList.add('closed', 'hidden');
+                rightPanel.classList.add('closed', 'hidden');
                 onMouseUp();
             } else if (pxLeft <= wNoSep && pxRight <= wNoSep) {
                 this._actualPanelsWidth.leftPanel = pxLeft;
                 this._actualPanelsWidth.rightPanel = pxRight;
-                this._leftPanel.classList.remove('hidden');
-                this._rightPanel.classList.remove('hidden');
+                leftPanel.classList.remove('hidden');
+                rightPanel.classList.remove('hidden');
             }
 
-            if (pxRight > this.minRightPxPanel) this._rightPanel.classList.remove('closed');
-            if (pxLeft > this.minLeftPxPanel) this._leftPanel.classList.remove('closed');
+            if (pxRight > this.minRightPxPanel) rightPanel.classList.remove('closed');
+            if (pxLeft > this.minLeftPxPanel) leftPanel.classList.remove('closed');
 
             this.setAttribute('msplit', `${this._actualPanelsWidth.leftPanel.toFixed(2)},${this._actualPanelsWidth.rightPanel.toFixed(2)}`);
-            if (this._rightPanel.layout) this._rightPanel.layout();
-            if (this._leftPanel.layout) this._leftPanel.layout();
+            if (rightPanel.layout) rightPanel.layout();
+            if (leftPanel.layout) leftPanel.layout();
             if (isMobile) lastPageX = event.pageX;
         };
 
@@ -131,7 +133,9 @@ export class CollabSpliter extends StateLitElement {
         };
 
         const onMouseUp = () => {
-            if (!this._leftPanel || !this._rightPanel) return;
+            const leftPanel = this._leftPanel;
+            const rightPanel = this._rightPanel;
+            if (!leftPanel || !rightPanel) return;
             lastPageX = 0; isMobile = false;
             document.querySelectorAll('iframe').forEach(f => f.style.pointerEvents = 'all');
             this._toogleIframePointerEvents(true);
@@ -140,12 +144,12 @@ export class CollabSpliter extends StateLitElement {
             document.removeEventListener('touchstart', touch2Mouse, true);
             document.removeEventListener('touchmove', touch2Mouse, true);
             document.removeEventListener('touchend', touch2Mouse, true);
-            if ((this._rightPanel.classList.contains('closed') && this._actualPanelsWidth.rightPanel > 0)
-                || (this._leftPanel.classList.contains('closed') && this._actualPanelsWidth.leftPanel > 0)) {
+            if ((rightPanel.classList.contains('closed') && this._actualPanelsWidth.rightPanel > 0)
+                || (leftPanel.classList.contains('closed') && this._actualPanelsWidth.leftPanel > 0)) {
                 this._toogleDefaultWidth();
             }
-            if (this._actualPanelsWidth.rightPanel < 1) this._rightPanel.classList.add('hidden');
-            if (this._actualPanelsWidth.leftPanel < 1) this._leftPanel.classList.add('hidden');
+            if (this._actualPanelsWidth.rightPanel < 1) rightPanel.classList.add('hidden');
+            if (this._actualPanelsWidth.leftPanel < 1) leftPanel.classList.add('hidden');
         };
 
         this._resizerSplitter.onmousedown = (e) => {
@@ -165,14 +169,16 @@ export class CollabSpliter extends StateLitElement {
         };
 
         this._resizerSplitter.ondblclick = () => {
-            if (!this._leftPanel || !this._rightPanel) return;
+            const leftPanel = this._leftPanel;
+            const rightPanel = this._rightPanel;
+            if (!leftPanel || !rightPanel) return;
             const level = +(this.getAttribute('level') || '7');
             if (this._fullScreenData[level]) {
                 this._fullScreenData[level] = '';
                 this._setMSplitFullScreen();
             }
-            this._leftPanel.classList.remove('closed');
-            this._rightPanel.classList.remove('closed');
+            leftPanel.classList.remove('closed');
+            rightPanel.classList.remove('closed');
             this._toogleDefaultWidth();
         };
 
@@ -265,14 +271,18 @@ export class CollabSpliter extends StateLitElement {
 
         const level = +(this.getAttribute('level') || '7');
         const fsByLevel = this._fullScreenData[level];
-        const usermsplit = localStorage.getItem('user-msplit');
         let leftPx: any, rightPx: any;
 
         if (fsByLevel === 'left') { leftPx = '100.00'; rightPx = '0.00'; }
         else if (fsByLevel === 'right') { leftPx = '0.00'; rightPx = '100.00'; }
-        else if (usermsplit) {
-            const data = JSON.parse(usermsplit);
-            if (data[level]) { const [l, r] = data[level].split(','); leftPx = l; rightPx = r; }
+        else {
+            try {
+                const usermsplit = localStorage.getItem('user-msplit');
+                if (usermsplit) {
+                    const data = JSON.parse(usermsplit);
+                    if (data[level]) { const [l, r] = data[level].split(','); leftPx = l; rightPx = r; }
+                }
+            } catch { /* unavailable or corrupted — fall through to defaults */ }
         }
 
         if (!leftPx || !rightPx) { leftPx = this.defaultLeftPanelWidthPercent; rightPx = this.defaultRightPanelWidthPercent; }
@@ -321,10 +331,12 @@ export class CollabSpliter extends StateLitElement {
         const lp = ((+wL / totalWidth) * 100).toFixed(2);
         const rp = ((+wR / totalWidth) * 100).toFixed(2);
         if (!lp || !rp) return;
-        const usermsplit = localStorage.getItem('user-msplit');
-        const data: any[] = usermsplit ? JSON.parse(usermsplit) : ['', '', '', '', '', '', '', ''];
-        data[level] = `${lp},${rp}`;
-        localStorage.setItem('user-msplit', JSON.stringify(data));
+        try {
+            const usermsplit = localStorage.getItem('user-msplit');
+            const data: any[] = usermsplit ? JSON.parse(usermsplit) : ['', '', '', '', '', '', '', ''];
+            data[level] = `${lp},${rp}`;
+            localStorage.setItem('user-msplit', JSON.stringify(data));
+        } catch { /* private mode or storage full — preferences not persisted */ }
     }
 
     private _setMSplitFullScreen() {

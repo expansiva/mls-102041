@@ -216,3 +216,7 @@ function getDecoratorClassInfo(decoratorString: string): IDecoratorClassInfo | u
     }
     return result;
 }
+
+export const SERVICE_START_WIDGET = '_102041_serviceStart';
+export const COLLAB_LOGIN_PLUGIN = '_100554_pluginCollabLogin';
+export const EXPLORE_PROJECTS_SERVICE = '_100554_serviceExploreProjects';

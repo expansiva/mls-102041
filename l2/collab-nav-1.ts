@@ -30,6 +30,7 @@ import { property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { StateLitElement } from '/_102027_/l2/stateLitElement.js';
+import { SERVICE_START_WIDGET } from '/_102041_/l2/utils.js';
 
 
 type ToolbarLevelStatus = 'start' | 'anonymous' | 'enabled' | 'disabled';
@@ -77,7 +78,7 @@ export class CollabNav1 extends StateLitElement {
     private _servicesDetailsArr: Record<string, any> = {};
     private _cacheInstancePromise: Promise<Cache> | null = null;
     private _cacheKeysPromise: Promise<readonly Request[]> | null = null;
-    private readonly _staticService = ['_102041_serviceStart'];
+    private readonly _staticService = [SERVICE_START_WIDGET];
 
     public openService(service: string, position: 'left' | 'right', level: number, args?: Record<string, string>) {
         return this._openService(service, position, level, args);
@@ -343,20 +344,12 @@ export class CollabNav1 extends StateLitElement {
                         if (!this._servicesDetailsArr[service.widget]) {
 
                             if (this._staticService.includes(service.widget)) {
-                                const _det = await this._getDetailsServiceStaticMls1(service.widget);
+                                const _det = await this._getDetailsServiceStatic(service.widget);
 
                                 if (_det) {
                                     servicesDetails.push({ details: _det });
                                 }
-                            }
-                            else if (!driver) {
-                                const _det = this._getDetailsServiceMls1(service.widget);
-
-                                if (_det) {
-                                    servicesDetails.push({ details: _det });
-                                }
-                            }
-                            else {
+                            } else {
                                 servicesPromises.push(
                                     this._getDetailsServiceCollabInJS3(
                                         level,
@@ -410,13 +403,7 @@ export class CollabNav1 extends StateLitElement {
         return data;
     }
 
-    private _getDetailsServiceMls1(widget: string): INav1Service | undefined {
-        const l2 = (window as any).l2_html;
-        if (!l2?.[widget]) return undefined;
-        return l2[widget]['service_details'];
-    }
-
-     private _convertFileNameToTag(widget: string): string {
+    private _convertFileNameToTag(widget: string): string {
         const match = widget.match(/_([0-9]+)_(.*)/);
         if (match) {
             const [, number, rest] = match;
@@ -427,11 +414,11 @@ export class CollabNav1 extends StateLitElement {
         return widget;
     }
 
-    private async _getDetailsServiceStaticMls1(widget: string): Promise<INav1Service | undefined> { 
+    private async _getDetailsServiceStatic(widget: string): Promise<INav1Service | undefined> {
         const tag = this._convertFileNameToTag(widget);
         const _temp: any = document.createElement(tag);
-        if(!_temp) return;
-        if(!_temp.details) return;
+        if (!_temp) return;
+        if (!_temp.details) return;
         return _temp.details;
     }
 
@@ -491,7 +478,7 @@ export class CollabNav1 extends StateLitElement {
     }
 
     private _prepareServicesByConfigProject(servicesByConfig: IServicesByProjectConfig, userPreferences: any[]): INav1CollabServiceData {
-        const staticStart = { icon: '', isStatic: false, state: 'foreground', tooltip: '', visible: true, widget: '_102041_serviceStart' };
+        const staticStart = { icon: '', isStatic: false, state: 'foreground', tooltip: '', visible: true, widget: SERVICE_START_WIDGET };
         const _cfg = servicesByConfig || { services: [] };
         const parsedConfig = this._parseJsonServicesByConfig(_cfg);
         const parsedPrefs = this._prepareJSONServiceData(userPreferences);
