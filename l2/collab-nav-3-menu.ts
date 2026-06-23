@@ -80,6 +80,7 @@ export class CollabNav3Menu extends StateLitElement {
     @state() private _historyTabs: { index: number; element: HTMLElement }[] = [];
     private _resizeTimeout: number = 0;
     @state() private _hiddenEls: Set<string> = new Set();
+    @state() private _menuVersion: number = 0;
 
     private msg: MessageType = messages['en'];
 
@@ -177,21 +178,21 @@ export class CollabNav3Menu extends StateLitElement {
         const onClickTools = this._getMenuOptions()?.onClickTools;
         if (tool.type === 'link') return html`
             <collab-nav-3-menu-tools-link key="${key}" rendertype="${renderType}"
-                .tool=${tool} .onClickTools=${onClickTools}></collab-nav-3-menu-tools-link>`;
+                .tool=${tool}  .onClickTools=${onClickTools}></collab-nav-3-menu-tools-link>`;
         if (tool.type === 'cycle') return html`
             <collab-nav-3-menu-tools-cycle key="${key}" rendertype="${renderType}"
                 selected="${(tool as IToolsData1).selected || 0}"
-                .tool=${tool} .onClickTools=${onClickTools}></collab-nav-3-menu-tools-cycle>`;
+                .tool=${tool}  .onClickTools=${onClickTools}></collab-nav-3-menu-tools-cycle>`;
         if (tool.type === 'dropdown') return html`
             <collab-nav-3-menu-tools-dropdown key="${key}" rendertype="${renderType}"
                 selected="${(tool as IToolsData1).selected || 0}"
                 icon="${tool.icon || ''}"
-                .tool=${tool} .onClickTools=${onClickTools}></collab-nav-3-menu-tools-dropdown>`;
+                .tool=${tool}  .onClickTools=${onClickTools}></collab-nav-3-menu-tools-dropdown>`;
         if (tool.type === 'tree-dropdown') return html`
             <collab-nav-3-menu-tools-tree-dropdown key="${key}" rendertype="${renderType}"
                 selected="${((tool as IToolsData2).selected || []).toString()}"
                 icon="${tool.icon || ''}"
-                .tool=${tool} .onClickTools=${onClickTools}></collab-nav-3-menu-tools-tree-dropdown>`;
+                .tool=${tool}  .onClickTools=${onClickTools}></collab-nav-3-menu-tools-tree-dropdown>`;
         return nothing;
     }
 
@@ -388,7 +389,21 @@ export class CollabNav3Menu extends StateLitElement {
 
     private _closeMenu() { this._menuChecked = false; }
 
-    private _refresh(mode: 'full' | 'tabs' | 'tools' = 'full') { this.requestUpdate(); }
+    private _refresh(mode: 'full' | 'tabs' | 'tools' = 'full') {
+        const tools = this._menu?.tools || {};
+        Object.values(tools).forEach((tool: any) => {
+            tool._version = (tool._version || 0) + 1;
+        });
+        this._menu = undefined;
+        this._menuVersion++;
+        
+        this.updateComplete.then(() => {
+            this.querySelectorAll('collab-nav-3-menu-tools-dropdown')
+                .forEach((el: any) => {
+                    el.requestUpdate();
+                });
+        });
+    }
 
     private _showAbout(): boolean {
         const menu = this._getMenuOptions();
@@ -424,7 +439,7 @@ export class CollabNav3Menu extends StateLitElement {
         const editor = this.nextElementSibling?.querySelector('collab-monaco-editor-102027') as HTMLElement;
         const msize = editor?.getAttribute('msize');
         if (editor && msize) editor.setAttribute('msize', msize);
-        
+
     }
 
     private _getMenuOptions(): IServiceMenu | undefined {
