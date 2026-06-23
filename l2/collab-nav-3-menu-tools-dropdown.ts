@@ -30,7 +30,7 @@ export class CollabNav3MenuToolsDropdown extends StateLitElement {
     @state() private _menuOpened: boolean = false;
 
     public onClickTools?: Function;
-    public tool?: IToolsDataDropDown;
+    @property({ attribute: false }) tool?: IToolsDataDropDown;
 
     connectedCallback() {
         super.connectedCallback();
