@@ -213,7 +213,7 @@ export class CollabNav1 extends StateLitElement {
         if (!toolbar) return;
         if (args && nav3) (nav3 as any).args = args;
         if (this.actualLevel !== level) {
-            (toolbar as any).state[level][position] = service;
+            if ((toolbar as any).state_) (toolbar as any).state_[level][position] = service;
             this._selectLevel(level);
             return;
         }
