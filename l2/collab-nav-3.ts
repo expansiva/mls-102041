@@ -230,7 +230,8 @@ export class CollabNav3 extends StateLitElement {
         const promise: Promise<void> = new Promise((resolve, reject) => {
             const script = document.createElement('script');
             script.type = 'module'; script.async = true;
-            script.src = `/_${project}_/l2/${path}.js`;
+            if(path?.startsWith('l2/')) script.src = `/_${project}_/${path}.js`;
+            else script.src = `/_${project}_/l2/${path}.js`;
             content.appendChild(script);
             script.onload = () => { attach(serviceWc); resolve(); };
             script.onerror = () => {
