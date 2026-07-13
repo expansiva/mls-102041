@@ -15,6 +15,7 @@ import { nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { StateLitElement } from '/_102029_/l2/stateLitElement.js';
 import { SERVICE_START_WIDGET } from '/_102041_/l2/utils.js';
+import { getPath, convertFileNameToTag } from '/_102027_/l2/utils.js';
 
 type ICollabServiceState2 = 'foreground' | 'background';
 type ICollabServicePosition2 = 'left' | 'right';
@@ -201,9 +202,11 @@ export class CollabNav3 extends StateLitElement {
 
     private async _instanceCollabService(service: string, content: HTMLElement, exec: boolean, level?: number) {
 
-        mls?.actual?.[0]?.setFullName(service);
+        // getPath = setFullName(service).getStorFileBase() — folder-aware; the tag must be
+        // derived from {project, shortName, folder} so services inside folders resolve too.
+        const info = getPath(service);
         const { project, path } = mls?.actual?.[0] || {};
-        const tagService = this._convertFileNameToTag(service);
+        const tagService = convertFileNameToTag(info ?? { shortName: service, project: project ?? 0 });
         content.innerHTML = '';
 
         const attach = (wc: HTMLElement) => {
@@ -276,17 +279,6 @@ export class CollabNav3 extends StateLitElement {
             const content = nav3._renderContainer(service.widget);
             await nav3._instanceService(service.widget, content, false);
         }
-    }
-
-    private _convertFileNameToTag(widget: string): string {
-        const match = widget.match(/_([0-9]+)_(.*)/);
-        if (match) {
-            const [, number, rest] = match;
-            const converted = rest.replace(/([A-Z])/g, '-$1').toLowerCase();
-            widget = `${converted}-${number}`;
-        }
-        if (widget.startsWith('-')) widget = widget.substring(1);
-        return widget;
     }
 
     private _onLevelChange(lastLevel: number) {

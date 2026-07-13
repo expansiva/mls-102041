@@ -31,6 +31,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { StateLitElement } from '/_102029_/l2/stateLitElement.js';
 import { SERVICE_START_WIDGET } from '/_102041_/l2/utils.js';
+import { getPath, convertFileNameToTag } from '/_102027_/l2/utils.js';
 
 
 type ToolbarLevelStatus = 'start' | 'anonymous' | 'enabled' | 'disabled';
@@ -403,19 +404,10 @@ export class CollabNav1 extends StateLitElement {
         return data;
     }
 
-    private _convertFileNameToTag(widget: string): string {
-        const match = widget.match(/_([0-9]+)_(.*)/);
-        if (match) {
-            const [, number, rest] = match;
-            const converted = rest.replace(/([A-Z])/g, '-$1').toLowerCase();
-            widget = `${converted}-${number}`;
-        }
-        if (widget.startsWith('-')) widget = widget.substring(1);
-        return widget;
-    }
-
     private async _getDetailsServiceStatic(widget: string): Promise<INav1Service | undefined> {
-        const tag = this._convertFileNameToTag(widget);
+        // Folder-aware tag derivation (shared with collab-nav-3 / 102027 utils).
+        const info = getPath(widget);
+        const tag = convertFileNameToTag(info ?? { shortName: widget, project: 0 });
         const _temp: any = document.createElement(tag);
         if (!_temp) return;
         if (!_temp.details) return;
