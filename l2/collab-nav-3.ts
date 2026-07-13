@@ -287,7 +287,6 @@ export class CollabNav3 extends StateLitElement {
         this._lastLevel = lastLevel;
         if (this.status === 'enabled') this._init();
     }
-
     private _layout(value: string | undefined | null) {
         if (!value) return;
         const activeService = this.querySelector(`collab-nav-3-service[data-service="${this.getAttribute('data-service')}"]`) as HTMLElement;
@@ -301,7 +300,9 @@ export class CollabNav3 extends StateLitElement {
         const newTop = +top + mHeightMenu;
         const msize = [width, newHeight.toFixed(2), newTop.toFixed(2), left].join(',');
         const msizeMenu = [width, mHeightMenu, newTop.toFixed(2), left].join(',');
-        let service: Element | undefined | null = children.find(c => c.tagName.startsWith('SERVICE-'));
+        // Services inside folders have the folder as tag prefix (aura--services--service-x-102020);
+        // the last '--' segment is the service's own tag, for root services it's the whole tag.
+        let service: Element | undefined | null = children.find(c => (c.tagName.split('--').pop() || '').startsWith('SERVICE-'));
         const isServiceStart = activeService.querySelector(`div[data-service="${SERVICE_START_WIDGET}"]`) as HTMLElement;
         if (isServiceStart) {
             isServiceStart.style.height = newHeight.toFixed(2) + 'px';
