@@ -13,7 +13,7 @@ const messages: { [key: string]: MessageType } = { en: message_en, pt: message_p
 
 import { nothing } from 'lit';
 import { property } from 'lit/decorators.js';
-import { StateLitElement } from '/_102027_/l2/stateLitElement.js';
+import { StateLitElement } from '/_102029_/l2/stateLitElement.js';
 import { SERVICE_START_WIDGET } from '/_102041_/l2/utils.js';
 
 type ICollabServiceState2 = 'foreground' | 'background';
