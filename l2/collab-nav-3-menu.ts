@@ -103,7 +103,7 @@ export class CollabNav3Menu extends StateLitElement {
             const [width] = this.msize.split(',');
             const ul = this.querySelector('.menu-list') as HTMLElement;
             if (ul) ul.style.width = width + 'px';
-            const container = this.querySelector('.container') as HTMLElement;
+            const container = this.querySelector('.containermenu') as HTMLElement;
             if (container) container.classList.toggle('hidden', width === '0');
             if (this._resizeTimeout) clearTimeout(this._resizeTimeout);
             this._resizeTimeout = window.setTimeout(() => this._onResizeWidthChange((+width) - 38), 200);
@@ -122,7 +122,7 @@ export class CollabNav3Menu extends StateLitElement {
 
         return html`
             <div>
-                <div class=${classMap({ container: true, checked: this._menuChecked })}>
+                <div class=${classMap({ containermenu: true, checked: this._menuChecked })}>
                     <label class="menu">
                         <input class="menu-btn" type="checkbox" .checked=${this._menuChecked}
                                @change=${this._onHamburgerChange}>
