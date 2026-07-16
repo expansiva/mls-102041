@@ -37,6 +37,7 @@ export class CollabSpliter extends StateLitElement {
     private _defaultPanelsWidth = { rightPanel: 0, leftPanel: 0 };
     private _actualPanelsWidth = { rightPanel: 0, leftPanel: 0 };
     private _fullScreenData: string[] = ['', '', '', '', '', '', '', ''];
+    private _isDragging = false;
 
     public setFullScreen(level: number, position: 'left' | 'right' | 'default') {
         this._fullScreenData[level] = position === 'default' ? '' : position;
@@ -73,7 +74,8 @@ export class CollabSpliter extends StateLitElement {
             this._leftPanel.style.width = wL + 'px';
             this._rightPanel.style.width = wR + 'px';
             this._updateSizePanelsOnSplitChange(parseFloat(wL), parseFloat(wR));
-            this._savePreferencesByLevel(this.msplit);
+            // durante o drag persiste só no mouseup; mudanças programáticas (load/reset/fullscreen) salvam aqui
+            if (!this._isDragging) this._savePreferencesByLevel(this.msplit);
         }
         if (changed.has('fixed') && this._resizerSplitter) this._createSeparator();
     }
@@ -92,8 +94,6 @@ export class CollabSpliter extends StateLitElement {
             const leftPanel = this._leftPanel;
             const rightPanel = this._rightPanel;
             if (!leftPanel || !rightPanel) return;
-            this._toogleIframePointerEvents(false);
-            document.querySelectorAll('iframe').forEach(f => f.style.pointerEvents = 'none');
             if (isMobile && !lastPageX) { lastPageX = event.pageX; return; }
 
             const movePx = isMobile ? event.pageX - (lastPageX ?? 0) : event.movementX;
@@ -103,7 +103,7 @@ export class CollabSpliter extends StateLitElement {
             const wNoSep = width - this._separatorWidth;
 
             if (pxLeft <= this.minLeftPxPanel && !leftPanel.classList.contains('closed')) {
-                this._actualPanelsWidth.rightPanel = width;
+                this._actualPanelsWidth.rightPanel = width - this._separatorWidth;
                 this._actualPanelsWidth.leftPanel = 0;
                 leftPanel.classList.add('closed', 'hidden');
                 onMouseUp();
@@ -122,9 +122,12 @@ export class CollabSpliter extends StateLitElement {
             if (pxRight > this.minRightPxPanel) rightPanel.classList.remove('closed');
             if (pxLeft > this.minLeftPxPanel) leftPanel.classList.remove('closed');
 
-            this.setAttribute('msplit', `${this._actualPanelsWidth.leftPanel.toFixed(2)},${this._actualPanelsWidth.rightPanel.toFixed(2)}`);
-            if (rightPanel.layout) rightPanel.layout();
-            if (leftPanel.layout) leftPanel.layout();
+            // epsilon-guard: só emite msplit (e re-layouta os filhos) quando muda de verdade —
+            // perto do mínimo, o round-trip percent↔px oscilava entre 2 strings e travava o updated()
+            if (this._setMsplitIfChanged(this._actualPanelsWidth.leftPanel, this._actualPanelsWidth.rightPanel)) {
+                if (rightPanel.layout) rightPanel.layout();
+                if (leftPanel.layout) leftPanel.layout();
+            }
             if (isMobile) lastPageX = event.pageX;
         };
 
@@ -139,8 +142,9 @@ export class CollabSpliter extends StateLitElement {
             const rightPanel = this._rightPanel;
             if (!leftPanel || !rightPanel) return;
             lastPageX = 0; isMobile = false;
-            document.querySelectorAll('iframe').forEach(f => f.style.pointerEvents = 'all');
+            this._isDragging = false;
             this._toogleIframePointerEvents(true);
+            this._savePreferencesByLevel(this.getAttribute('msplit') || '');
             document.removeEventListener('mousemove', resize);
             document.removeEventListener('mouseup', onMouseUp);
             document.removeEventListener('touchstart', touch2Mouse, true);
@@ -157,6 +161,8 @@ export class CollabSpliter extends StateLitElement {
         if (!this.fixed) {
             this._resizerSplitter.onmousedown = (e) => {
                 isMobile = false;
+                this._isDragging = true;
+                this._toogleIframePointerEvents(false);
                 document.addEventListener('mousemove', resize);
                 document.addEventListener('mouseup', onMouseUp);
                 e.preventDefault();
@@ -164,6 +170,8 @@ export class CollabSpliter extends StateLitElement {
 
             this._resizerSplitter.ontouchstart = (e) => {
                 e.preventDefault(); isMobile = true; lastPageX = undefined;
+                this._isDragging = true;
+                this._toogleIframePointerEvents(false);
                 document.addEventListener('mousemove', resize);
                 document.addEventListener('mouseup', onMouseUp);
                 document.addEventListener('touchstart', touch2Mouse, true);
@@ -196,8 +204,11 @@ export class CollabSpliter extends StateLitElement {
     }
 
     private _toogleIframePointerEvents(add: boolean) {
+        // chamado 1x por drag (mousedown/mouseup), não mais por mousemove — evita varrer o DOM inteiro a cada movimento
+        const val = add ? 'all' : 'none';
+        document.querySelectorAll('iframe').forEach(f => (f as HTMLElement).style.pointerEvents = val);
         document.querySelectorAll('*').forEach((el: Element) => {
-            if (el.shadowRoot) el.shadowRoot.querySelectorAll('iframe').forEach(f => f.style.pointerEvents = add ? 'all' : 'none');
+            if (el.shadowRoot) el.shadowRoot.querySelectorAll('iframe').forEach(f => (f as HTMLElement).style.pointerEvents = val);
         });
     }
 
@@ -215,7 +226,7 @@ export class CollabSpliter extends StateLitElement {
         if (!this._leftPanel || !this._rightPanel) return;
         this._leftPanel.style.width = this._defaultPanelsWidth.leftPanel + 'px';
         this._rightPanel.style.width = this._defaultPanelsWidth.rightPanel + 'px';
-        this.setAttribute('msplit', `${this._defaultPanelsWidth.leftPanel.toFixed(2)},${this._defaultPanelsWidth.rightPanel.toFixed(2)}`);
+        this._setMsplitIfChanged(this._defaultPanelsWidth.leftPanel, this._defaultPanelsWidth.rightPanel);
         if (this._rightPanel.layout) this._rightPanel.layout();
         if (this._leftPanel.layout) this._leftPanel.layout();
         this._leftPanel.classList.remove('hidden');
@@ -232,8 +243,25 @@ export class CollabSpliter extends StateLitElement {
         else if (fsByLevel === 'right' && lw !== 0) { this._fullScreenData[level] = ''; this._setMSplitFullScreen(); }
 
         if (!this._leftPanel || !this._rightPanel) return;
-        this._leftPanel.setAttribute('msize', `${lw},${height},${top},0`);
-        this._rightPanel.setAttribute('msize', `${rw},${height},${top},${newLeft}`);
+        this._setMsizeIfChanged(this._leftPanel, `${lw},${height},${top},0`);
+        this._setMsizeIfChanged(this._rightPanel, `${rw},${height},${top},${newLeft}`);
+    }
+
+    private _setMsizeIfChanged(el: HTMLElement, next: string) {
+        if (el.getAttribute('msize') === next) return;
+        el.setAttribute('msize', next);
+    }
+
+    // só emite msplit quando muda >0.5px em algum lado — quebra o ciclo de oscilação na fonte.
+    // retorna true se o atributo foi de fato atualizado.
+    private _setMsplitIfChanged(l: number, r: number): boolean {
+        const cur = this.getAttribute('msplit');
+        if (cur) {
+            const [cl, cr] = cur.split(',');
+            if (Math.abs(parseFloat(cl) - l) < 0.5 && Math.abs(parseFloat(cr) - r) < 0.5) return false;
+        }
+        this.setAttribute('msplit', `${l.toFixed(2)},${r.toFixed(2)}`);
+        return true;
     }
 
     private _setDefaultValues(msize: string) {
@@ -310,7 +338,7 @@ export class CollabSpliter extends StateLitElement {
             if (nr < 1) this._rightPanel.classList.add('hidden');
             if (this._rightPanel.layout) this._rightPanel.layout();
             if (this._leftPanel.layout) this._leftPanel.layout();
-            this.setAttribute('msplit', `${nl},${nr}`);
+            this._setMsplitIfChanged(nl, nr);
         } else {
             this._leftPanel.style.width = left + 'px';
             this._rightPanel.style.width = right + 'px';
@@ -319,7 +347,7 @@ export class CollabSpliter extends StateLitElement {
             if (right < 1) this._rightPanel.classList.add('hidden');
             if (this._rightPanel.layout) this._rightPanel.layout();
             if (this._leftPanel.layout) this._leftPanel.layout();
-            this.setAttribute('msplit', `${left},${right}`);
+            this._setMsplitIfChanged(left, right);
         }
     }
 

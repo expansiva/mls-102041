@@ -244,11 +244,15 @@ export class CollabNav2 extends StateLitElement {
 
     private _verifyControllers() {
         const items = this.querySelector('.collab-nav-2-items') as HTMLElement;
-        if (!items) return;
-        const { scrollWidth, clientWidth } = items;
-        if (clientWidth < 40) { this._controllersVisible = false; return; }
-        const eff = this._controllersVisible ? clientWidth + 20 : clientWidth;
-        this._controllersVisible = scrollWidth > eff;
+        const container = this.querySelector('.collab-nav-2-container') as HTMLElement;
+        if (!items || !container) return;
+        // Referência ESTÁVEL: largura do container (não muda quando os controllers aparecem/somem)
+        // vs scrollWidth dos itens (também estável). Usar items.clientWidth aqui criava feedback —
+        // mostrar os controllers encolhia o items → clientWidth mudava → _controllersVisible oscilava
+        // a cada updated() → loop infinito de render (travamento). Sem feedback, converge em 1 passada.
+        const available = container.clientWidth;
+        if (available < 40) { this._controllersVisible = false; return; }
+        this._controllersVisible = items.scrollWidth > available;
         this._checkControllersOnScroll();
     }
 
