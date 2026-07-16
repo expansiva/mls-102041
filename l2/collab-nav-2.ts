@@ -138,8 +138,20 @@ export class CollabNav2 extends StateLitElement {
             await this.updateComplete;
             this._onStatusChanged();
         }
-        this._setShortCuts();
         this._verifyControllers();
+        this._registerTooltips();
+    }
+
+    private _registerTooltips() {
+        const register = () => {
+            const tooltip = document.querySelector('collab-tooltip') as any;
+            if (!tooltip?.tooltip) return;
+            this.querySelectorAll('collab-nav-2-item').forEach(el => tooltip.tooltip(el));
+        };
+        // itens novos (addService) e o 1º load pré-upgrade do collab-tooltip:
+        // updated() roda a cada mudança e o registro é idempotente (listeners estáveis deduplicam).
+        if (customElements.get('collab-tooltip')) register();
+        else customElements.whenDefined('collab-tooltip').then(register);
     }
 
     render() {
@@ -151,7 +163,10 @@ export class CollabNav2 extends StateLitElement {
                     <i class="fa fa-chevron-left"></i>
                 </div>
                 <div class="collab-nav-2-items" @scroll=${() => this._checkControllersOnScroll()}>
-                    ${repeat(this._services, s => s.widget, s => this._renderItem(s))}
+                    ${(() => {
+            let visibleIndex = -1;
+            return repeat(this._services, s => s.widget, s => this._renderItem(s, s.visible ? ++visibleIndex : -1));
+        })()}
                 </div>
                 <div class="controller right ${classMap({ visible: this._controllersVisible, disabled: !this._scrollRight })}"
                      @click=${() => this._onControllerClick('right')}>
@@ -161,11 +176,13 @@ export class CollabNav2 extends StateLitElement {
         `;
     }
 
-    private _renderItem(item: ICollabService3) {
+    private _renderItem(item: ICollabService3, visibleIndex: number) {
+        const shortcut = this._shortcutFor(visibleIndex);
+        const tooltip = shortcut ? `${item.tooltip} (${shortcut})` : item.tooltip;
         return html`
             <collab-nav-2-item
                 data-service="${item.widget}"
-                data-tooltip="${item.tooltip}"
+                data-tooltip="${tooltip}"
                 isstatic="${item.isStatic}"
                 visible="${item.visible}"
                 class=${classMap({
@@ -242,18 +259,13 @@ export class CollabNav2 extends StateLitElement {
         this._scrollRight = items.clientWidth + items.scrollLeft < items.scrollWidth;
     }
 
-    private _setShortCuts() {
-        const items = this.querySelectorAll('collab-nav-2-item:not([visible=false])');
-        items.forEach((item: any, index) => {
-            const original = item['tooltip'] || item.getAttribute('data-tooltip') || '';
-            if (index > 9) { item.setAttribute('data-tooltip', original); return; }
-            const newIndex = index === 9 ? 0 : index + 1;
-            const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-            const shortcut = this.position === 'left'
-                ? (isMac ? `⌃+⌥+${newIndex}` : `Ctrl+Alt+${newIndex}`)
-                : (isMac ? `⌥+⇧+${newIndex}` : `Alt+Shift+${newIndex}`);
-            item.setAttribute('data-tooltip', `${original} (${shortcut})`);
-        });
+    private _shortcutFor(visibleIndex: number): string {
+        if (visibleIndex < 0 || visibleIndex > 9) return '';
+        const newIndex = visibleIndex === 9 ? 0 : visibleIndex + 1;
+        const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+        return this.position === 'left'
+            ? (isMac ? `⌃+⌥+${newIndex}` : `Ctrl+Alt+${newIndex}`)
+            : (isMac ? `⌥+⇧+${newIndex}` : `Alt+Shift+${newIndex}`);
     }
 
     private async _renderServiceByLevel() {

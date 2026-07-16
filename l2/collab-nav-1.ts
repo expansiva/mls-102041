@@ -108,6 +108,7 @@ export class CollabNav1 extends StateLitElement {
             if (this._lastActive !== this.tabActive && this.status !== 'start') this._activeMe(this.tabActive);
         }
         if (changed.has('status')) this._changeStatus();
+        this._registerTooltips();
     }
 
     render() {
@@ -180,10 +181,16 @@ export class CollabNav1 extends StateLitElement {
         `;
     }
 
-    updated_tooltip() {
-        const tooltip = document.querySelector('collab-tooltip') as any;
-        if (!tooltip?.tooltip) return;
-        this.querySelectorAll('nav-1-item, nav-1-notification').forEach(el => tooltip.tooltip(el));
+    private _registerTooltips() {
+        const register = () => {
+            const tooltip = document.querySelector('collab-tooltip') as any;
+            if (!tooltip?.tooltip) return;
+            this.querySelectorAll('nav-1-item, nav-1-notification').forEach(el => tooltip.tooltip(el));
+        };
+        // se o collab-tooltip ainda não foi upgraded no 1º load, re-tenta após a definição;
+        // re-registrar é idempotente (addEventListener deduplica listeners estáveis).
+        if (customElements.get('collab-tooltip')) register();
+        else customElements.whenDefined('collab-tooltip').then(register);
     }
 
     private _onUserClick(e: MouseEvent, tabI: number) {
