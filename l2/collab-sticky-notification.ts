@@ -19,7 +19,7 @@ const messages: { [key: string]: MessageType } = { en: message_en, pt: message_p
 
 import { html } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-import type { CollabPage } from '/_102041_/l2/collab-page.js';
+import { CollabPage } from '/_102041_/l2/collab-page.js';
 import { StateLitElement } from '/_102029_/l2/stateLitElement.js';
 
 type IMessageType = 'information' | 'alert' | 'error';

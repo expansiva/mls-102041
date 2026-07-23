@@ -131,8 +131,8 @@ import '/_102041_/l2/serviceStart.js';
 
     const startLoading = async () => {
         const urlParams = new URLSearchParams(window.location.search);
-        versionLib = window['latest'].libs;
-        versionMonaco = window['latest'].monaco;
+        versionLib = (window as any)['latest'].libs;
+        versionMonaco = (window as any)['latest'].monaco;
         if (!versionLib) throw new Error('No libs version loaded');
         (window as any).less = { env: 'production', logLevel: 1 };
         window.onmessage = onMessage;
