@@ -1,0 +1,20 @@
+# Config S3 do publish/rollback do shell studio
+# (mls-102041/scripts/publish/publishStudio.mjs).
+# Copie para mls-102041/servers/s3.conf e preencha. Arquivos *.conf reais são
+# gitignored (ver mls-102041/.gitignore).
+# Todas as chaves também podem vir por env var (env vence o arquivo).
+#
+# Mesmos valores usados na aba Config do servicePublish dentro do studio
+# (lá ficam no localStorage do browser; aqui ficam fora do sistema — é o que
+# permite recuperar de uma publicação quebrada, TASK-102041-3).
+
+S3_BUCKET=
+S3_REGION=us-east-1
+S3_ACCESS_KEY_ID=
+S3_SECRET_KEY=
+
+# Endpoint S3-compatible custom (opcional; vazio = AWS)
+#S3_ENDPOINT=https://s3.example.com
+
+# Base do CDN usada no <base href> do index publicado (default abaixo)
+#CDN_BASE=https://cdn.collab.codes

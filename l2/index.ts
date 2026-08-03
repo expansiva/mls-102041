@@ -14,8 +14,23 @@ import '/_102041_/l2/serviceStart.js';
     let versionLib: string;
     let versionMonaco: string;
     const version = '1.2';
+    let resolveMonacoReady: (() => void) | undefined;
+    let rejectMonacoReady: ((reason?: any) => void) | undefined;
 
-    const loadMonaco = (): void => {
+    const ensureMonacoReady = (): Promise<void> => {
+        const ready = (window as any).monacoReady as Promise<void> | undefined;
+        if (ready) return ready;
+
+        (window as any).monacoReady = new Promise<void>((resolve, reject) => {
+            resolveMonacoReady = resolve;
+            rejectMonacoReady = reject;
+        });
+        return (window as any).monacoReady;
+    };
+
+    const loadMonaco = (): Promise<void> => {
+        const ready = ensureMonacoReady();
+        if (document.getElementById('monacoLoader')) return ready;
         if (!versionMonaco) throw new Error('No monaco version loaded');
         mls['baseMonaco'] = `../../../monaco/${versionMonaco}/vs/`;
         const l1 = document.createElement('link') as HTMLLinkElement;
@@ -25,14 +40,18 @@ import '/_102041_/l2/serviceStart.js';
         document.head.append(l1);
 
         const l2 = document.createElement('script') as HTMLScriptElement;
+        l2.id = 'monacoLoader';
         l2.src = `${mls['baseMonaco']}../monaco.js`;
         l2.async = true;
+        l2.onload = () => resolveMonacoReady?.();
+        l2.onerror = () => rejectMonacoReady?.(new Error(`Could not load Monaco from ${l2.src}`));
         document.head.append(l2);
+        return ready;
     };
 
     const onMessage = (ev: MessageEvent): any => {
         if (ev.origin !== window.origin) return;
-        if (ev.data?.func === 'loadMonaco') loadMonaco();
+        if (ev.data?.func === 'loadMonaco') void loadMonaco();
     };
 
     const initModoStart = () => {
@@ -104,7 +123,7 @@ import '/_102041_/l2/serviceStart.js';
 
         }
 
-        // put message to load Monaco after print
+        // Start Monaco after the initial UI flow. Consumers can already await monacoReady.
         window.postMessage({ func: 'loadMonaco' }, window.origin);
 
     };
@@ -136,6 +155,8 @@ import '/_102041_/l2/serviceStart.js';
         if (!versionLib) throw new Error('No libs version loaded');
         (window as any).less = { env: 'production', logLevel: 1 };
         window.onmessage = onMessage;
+        // Create the readiness signal early without starting the Monaco download yet.
+        ensureMonacoReady();
         loadNodeJSLibs();
     };
     startLoading();

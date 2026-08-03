@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "buildCI": "node ../scripts/buildCI/buildCI.mjs 102041"
+    "buildCI": "node ../scripts/buildCI/buildCI.mjs 102041",
+    "publish:studio": "node scripts/publish/publishStudio.mjs"
   },
   "author": "",
   "license": "ISC",

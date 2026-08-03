@@ -7,7 +7,9 @@ carrega o resto do sistema. Ele é publicado como site estático no S3/CDN.
 ## Publish / rollback pela linha de comando
 
 O publish e o rollback rodam **fora do studio**, por
-[scripts/publish/publishStudio.mjs](../scripts/publish/publishStudio.mjs).
+[scripts/publish/publishStudio.mjs](scripts/publish/publishStudio.mjs) (vive
+neste repo, mas opera no monorepo `mls-base` que o contém: o `tsc` e o staging
+`.publishStudio/` rodam na raiz).
 
 Motivo (TASK-102041-3): o publish antigo é um service **dentro do próprio
 sistema** ([servicePublish.ts](l2/servicePublish.ts)). Se uma versão quebrada for
@@ -27,11 +29,11 @@ o CLI é o caminho canônico e de recuperação.
 
 ## 1. Configuração (uma vez)
 
-As credenciais S3 ficam em `servers/s3.conf` (gitignored). Copie o exemplo e
-preencha com os mesmos valores da aba **Config** do servicePublish:
+As credenciais S3 ficam em `mls-102041/servers/s3.conf` (gitignored). Copie o
+exemplo e preencha com os mesmos valores da aba **Config** do servicePublish:
 
 ```bash
-cp servers/s3.conf.example servers/s3.conf
+cp mls-102041/servers/s3.conf.example mls-102041/servers/s3.conf
 ```
 
 Campos (todos também aceitos como variável de ambiente, que vence o arquivo):
@@ -52,12 +54,14 @@ Campos (todos também aceitos como variável de ambiente, que vence o arquivo):
 
 ## 2. Comandos
 
-Todos rodam da raiz do repo (`mls-base`).
+Os exemplos abaixo rodam da raiz do repo (`mls-base`). De dentro de
+`mls-102041/` o equivalente é `pnpm run publish:studio <args>` (ex.:
+`pnpm run publish:studio publish --dry-run`) — o script não depende do `cwd`.
 
 ### `list` — ver o que está publicado
 
 ```bash
-node scripts/publish/publishStudio.mjs list
+node mls-102041/scripts/publish/publishStudio.mjs list
 ```
 
 Lista as versões (`datetime14`) em `www/` do bucket, marcando qual está apontada
@@ -68,13 +72,13 @@ pelo `latest.json` e qual está no `index.html` da raiz. Use para descobrir o
 
 ```bash
 # publica todos os idiomas do l5/project.json
-node scripts/publish/publishStudio.mjs publish
+node mls-102041/scripts/publish/publishStudio.mjs publish
 
 # só alguns idiomas
-node scripts/publish/publishStudio.mjs publish --langs en,pt
+node mls-102041/scripts/publish/publishStudio.mjs publish --langs en,pt
 
 # build local SEM subir (inspecionar .publishStudio/out/ antes)
-node scripts/publish/publishStudio.mjs publish --dry-run
+node mls-102041/scripts/publish/publishStudio.mjs publish --dry-run
 ```
 
 O que o `publish` faz, em ordem:
@@ -107,10 +111,10 @@ Flags do `publish`:
 
 ```bash
 # volta para uma versão específica (pegue o datetime14 no `list`)
-node scripts/publish/publishStudio.mjs rollback 20260714093632
+node mls-102041/scripts/publish/publishStudio.mjs rollback 20260714093632
 
 # se a versão tiver mais de um idioma, escolha qual vai para a raiz
-node scripts/publish/publishStudio.mjs rollback 20260714093632 --lang en
+node mls-102041/scripts/publish/publishStudio.mjs rollback 20260714093632 --lang en
 ```
 
 Copia (server-side, dentro do S3) o `index.html` daquela versão para a raiz,
@@ -122,20 +126,20 @@ atualiza o `latest.json` e valida. Não recompila nada — recupera em segundos.
 
 ```bash
 # 1. configurar credenciais (uma vez)
-cp servers/s3.conf.example servers/s3.conf   # e preencher
+cp mls-102041/servers/s3.conf.example mls-102041/servers/s3.conf   # e preencher
 
 # 2. conferir o estado atual
-node scripts/publish/publishStudio.mjs list
+node mls-102041/scripts/publish/publishStudio.mjs list
 
 # 3. build local e inspeção (sem subir)
-node scripts/publish/publishStudio.mjs publish --dry-run
+node mls-102041/scripts/publish/publishStudio.mjs publish --dry-run
 #    → abrir .publishStudio/out/<versão>/en/index.html e conferir
 
 # 4. publicar
-node scripts/publish/publishStudio.mjs publish
+node mls-102041/scripts/publish/publishStudio.mjs publish
 
 # 5. se algo quebrar, voltar para a versão boa anterior
-node scripts/publish/publishStudio.mjs rollback <datetime14>
+node mls-102041/scripts/publish/publishStudio.mjs rollback <datetime14>
 ```
 
 ---
@@ -170,7 +174,10 @@ Cada versão é imutável e fica no bucket; o rollback é só reapontar a raiz +
   studio não há service worker. Antes do primeiro publish de produção, vale um
   **teste de paridade**: comparar o `index.html` gerado pelo `--dry-run` com o
   gerado pelo servicePublish no studio (ignorando `base href`/versão).
-- **Arquivos temporários**: `.publishStudio/` e `tsconfig.publishStudio.json` são
-  gitignored.
+- **Onde vive o quê**: o script e a conf ficam neste repo
+  (`mls-102041/scripts/publish/`, `mls-102041/servers/`), porque são específicos
+  do shell. O que ele gera é do monorepo e fica na **raiz** do `mls-base`:
+  `.publishStudio/` e `tsconfig.publishStudio.json` (ambos gitignored lá).
+  A conf real (`servers/*.conf`) é gitignored pelo `.gitignore` deste repo.
 - **`pnpm build` / `publishMlsBase.py`** são **outra coisa**: aquele é o publish
   de dev dos projetos-cliente para a VM. Este README é só do shell studio no S3.
