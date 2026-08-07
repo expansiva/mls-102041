@@ -21,11 +21,17 @@ export class CollabPage extends StateLitElement {
     connectedCallback() {
         super.connectedCallback();
         window.addEventListener('resize', this._onResize);
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', this._onResize);
+        }
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
         window.removeEventListener('resize', this._onResize);
+        if (window.visualViewport) {
+            window.visualViewport.removeEventListener('resize', this._onResize);
+        }
     }
 
     firstUpdated(changedProperties: Map<PropertyKey, unknown>) {
