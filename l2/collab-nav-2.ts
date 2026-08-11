@@ -192,7 +192,7 @@ export class CollabNav2 extends StateLitElement {
             disabled: false,
         })}
                 style="${item.visible ? '' : 'display:none'}"
-                @click=${() => this._onItemClick(item)}>
+                @click=${(e: MouseEvent) => this._onItemClick(item, e.isTrusted)}>
                 <i class="fa">${unsafeHTML(item.icon)}</i>
                 <span>${item.tooltip}</span>
             </collab-nav-2-item>
@@ -205,19 +205,19 @@ export class CollabNav2 extends StateLitElement {
         if (this.containerItens) this.containerItens.onscroll = () => this._checkControllersOnScroll();
     }
 
-    private _onItemClick(item: ICollabService3) {
+    private _onItemClick(item: ICollabService3, fromRealClick: boolean = false) {
         this.state_[this.level][this.position] = item.widget;
         const el = this.querySelector(`collab-nav-2-item[data-service="${item.widget}"]`) as HTMLElement;
-        if (el) this._selectItem(el, item.widget);
+        if (el) this._selectItem(el, item.widget, fromRealClick);
     }
 
-    private _selectItem(el: HTMLElement, service: string) {
+    private _selectItem(el: HTMLElement, service: string, fromRealClick: boolean = false) {
         const lastSelected = this.querySelector('collab-nav-2-item.selected')?.getAttribute('data-service');
         this.querySelectorAll('collab-nav-2-item').forEach(i => i.classList.remove('selected'));
         el.classList.add('selected');
         this._verifyControllers();
         this._fireToolbarSelected(service, lastSelected || '');
-        this._fireSelectedChangeNav3(service);
+        this._fireSelectedChangeNav3(service, undefined, fromRealClick);
         if (mls?.setActualService) mls.setActualService(service);
         if (mls?.setActualPosition) mls.setActualPosition(this.position);
     }
@@ -227,8 +227,17 @@ export class CollabNav2 extends StateLitElement {
         mls?.events?.fire([this.level as mls.Level], ['ToolBarSelected'], JSON.stringify(params));
     }
 
-    private _fireSelectedChangeNav3(service: string, nav2?: HTMLElement) {
-        const nav3 = nav2 ? nav2.nextElementSibling : this.nextElementSibling;
+    private _fireSelectedChangeNav3(service: string, nav2?: HTMLElement, fromRealClick: boolean = false) {
+        let nav3 = nav2 ? nav2.nextElementSibling : this.nextElementSibling;
+        // nextElementSibling exists but isn't a nav3 in header-only chrome (its sibling
+        // is the OTHER nav2) — the truthy check alone misses that, fall back by tag.
+        // Only reach across to the shared content nav3 on a genuine user click — an
+        // automatic restore-last-service on enable/mount (isTrusted: false) must not
+        // hijack whatever the content structure's nav3 was already showing.
+        if ((!nav3 || nav3.tagName !== 'COLLAB-NAV-3') && fromRealClick) {
+            const position = (nav2 ?? this).getAttribute('toolbarposition') ?? 'left';
+            nav3 = document.querySelector(`collab-nav-3[toolbarposition="${position}"]`);
+        }
         if (nav3) {
             nav3.setAttribute('level', String(this.level));
             nav3.setAttribute('data-service', service);
@@ -318,7 +327,7 @@ export class CollabNav2 extends StateLitElement {
             const svc = this.actualServices[_key];
             if (key === '7') s[key].left = START;
             else if (s[_key].left === '' || s[_key].left === START) s[_key].left = svc.left[1]?.widget || START;
-            if (s[_key].right === '') s[_key].right = svc.right[0]?.widget;
+            if (s[_key].right === '') s[_key].right = svc.right[0]?.widget || '';
         }
         this._onlyFirstTime[this.position] = true;
         this.state_ = s;
@@ -326,7 +335,7 @@ export class CollabNav2 extends StateLitElement {
 
     private _activeLastServiceClicked() {
         const last = this.state_[this.level][this.position];
-        if (!last) { this._fireSelectedChangeNav3(last); return; }
+        if (!last) { this._fireSelectedChangeNav3(''); return; }
         const el = this.querySelector(`collab-nav-2-item[data-service="${last}"]`) as HTMLElement;
         const isStaticSelected = el?.getAttribute('isstatic') === 'true' && el?.classList.contains('selected');
         if (el && !isStaticSelected) this._selectItem(el, last);

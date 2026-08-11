@@ -256,7 +256,7 @@ export class CollabNav1 extends StateLitElement {
 
     private async _fireChangeLevel(lastLevel: number) {
         await Promise.all(['collab-nav-2', 'collab-nav-3'].map(wc => customElements.whenDefined(wc)));
-        const collabPage = document.querySelector('collab-page');
+        const collabPage = this.closest('collab-page');
         if (!collabPage) return;
         const nav2s = Array.from(collabPage.querySelectorAll('collab-nav-2'));
         if (nav2s.length < 2) return;
@@ -286,7 +286,7 @@ export class CollabNav1 extends StateLitElement {
     private async _changeStatus() {
         if (this.status === 'start') {
             await Promise.all(['collab-nav-2', 'collab-nav-3'].map(wc => customElements.whenDefined(wc)));
-            const page = document.querySelector('collab-page');
+            const page = this.closest('collab-page');
             if (!page) return;
             this._activeIndex = 0;
             this._lastActive = 0;
