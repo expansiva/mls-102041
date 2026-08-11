@@ -4,7 +4,9 @@
   "description": "",
   "scripts": {
     "buildCI": "node ../scripts/buildCI/buildCI.mjs 102041",
-    "publish:studio": "node scripts/publish/publishStudio.mjs"
+    "publish:studio": "node scripts/publish/publishStudio.mjs publish",
+    "publish:list": "node scripts/publish/publishStudio.mjs list",
+    "publish:rollback": "node scripts/publish/publishStudio.mjs rollback"
   },
   "author": "",
   "license": "ISC",
