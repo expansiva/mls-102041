@@ -53,6 +53,8 @@ export class CollabNav2 extends StateLitElement {
     @state() private _scrollRight: boolean = false;
 
     private _badgesState: Record<string, boolean> = {};
+    /** Set on a level switch, consumed by the restore that follows it (see updated()). */
+    private _levelChangePending: boolean = false;
     private _alreadyLoadedServices: boolean = false;
     private _onlyFirstTime: Record<string, boolean> = { left: false, right: false };
 
@@ -66,6 +68,21 @@ export class CollabNav2 extends StateLitElement {
     private readonly _staticService = [SERVICE_START_WIDGET];
 
     public layout() { this._verifyControllers(); }
+
+    /**
+     * Selects a service by widget and moves the content nav3 to it.
+     *
+     * For hosts that own the toolbar from outside (the runtime shell switches back to client
+     * mode and its own services must be on screen again). Deliberately NOT the remembered
+     * service: the memory holds whatever was opened last, which is the wrong thing to come back
+     * to. The memory is left untouched. Returns false when this toolbar has no such item.
+     */
+    public selectServiceByWidget(widget: string): boolean {
+        const el = this.querySelector(`collab-nav-2-item[data-service="${widget}"]`) as HTMLElement | null;
+        if (!el) return false;
+        this._selectItem(el, widget, true);
+        return true;
+    }
 
     public toogleBadge(show: boolean, path: string, saveState = true) {
         if (saveState) this._badgesState[path] = show;
@@ -128,6 +145,11 @@ export class CollabNav2 extends StateLitElement {
 
     async updated(changed: Map<string, unknown>) {
         if (changed.has('level')) {
+            // A level SWITCH, not the initial attribute landing on the class default (0).
+            // nav-1 drives the switch as level -> status 'start' -> status 'enabled', and the
+            // 'enabled' cycle no longer carries the level change — hence the pending flag.
+            const previousLevel = changed.get('level');
+            if (typeof previousLevel === 'number' && previousLevel > 0) this._levelChangePending = true;
             await this._renderServiceByLevel();
             await this.updateComplete;
             this._onStatusChanged();
@@ -211,13 +233,18 @@ export class CollabNav2 extends StateLitElement {
         if (el) this._selectItem(el, item.widget, fromRealClick);
     }
 
-    private _selectItem(el: HTMLElement, service: string, fromRealClick: boolean = false) {
+    /**
+     * @param drivesContent this selection must also move the content nav3. True for a genuine
+     * user click and for the restore that follows a LEVEL CHANGE; false for the restore on
+     * mount/enable, which must not hijack what the content is already showing.
+     */
+    private _selectItem(el: HTMLElement, service: string, drivesContent: boolean = false) {
         const lastSelected = this.querySelector('collab-nav-2-item.selected')?.getAttribute('data-service');
         this.querySelectorAll('collab-nav-2-item').forEach(i => i.classList.remove('selected'));
         el.classList.add('selected');
         this._verifyControllers();
         this._fireToolbarSelected(service, lastSelected || '');
-        this._fireSelectedChangeNav3(service, undefined, fromRealClick);
+        this._fireSelectedChangeNav3(service, undefined, drivesContent);
         if (mls?.setActualService) mls.setActualService(service);
         if (mls?.setActualPosition) mls.setActualPosition(this.position);
     }
@@ -227,18 +254,20 @@ export class CollabNav2 extends StateLitElement {
         mls?.events?.fire([this.level as mls.Level], ['ToolBarSelected'], JSON.stringify(params));
     }
 
-    private _fireSelectedChangeNav3(service: string, nav2?: HTMLElement, fromRealClick: boolean = false) {
+    private _fireSelectedChangeNav3(service: string, nav2?: HTMLElement, drivesContent: boolean = false) {
         let nav3 = nav2 ? nav2.nextElementSibling : this.nextElementSibling;
         // nextElementSibling exists but isn't a nav3 in header-only chrome (its sibling
         // is the OTHER nav2) — the truthy check alone misses that, fall back by tag.
-        // Only reach across to the shared content nav3 on a genuine user click — an
-        // automatic restore-last-service on enable/mount (isTrusted: false) must not
-        // hijack whatever the content structure's nav3 was already showing.
-        if ((!nav3 || nav3.tagName !== 'COLLAB-NAV-3') && fromRealClick) {
+        // Only reach across to the shared content nav3 when this selection is meant to
+        // drive it (user click, or the restore after a level change) — the restore on
+        // mount/enable must not hijack whatever the content nav3 was already showing.
+        if ((!nav3 || nav3.tagName !== 'COLLAB-NAV-3') && drivesContent) {
             const position = (nav2 ?? this).getAttribute('toolbarposition') ?? 'left';
             nav3 = document.querySelector(`collab-nav-3[toolbarposition="${position}"]`);
         }
-        if (nav3) {
+        // Tag check, not truthiness: in header-only chrome the sibling IS an element (the
+        // other nav2) and writing level/data-service on it silently targeted the wrong node.
+        if (nav3 && nav3.tagName === 'COLLAB-NAV-3') {
             nav3.setAttribute('level', String(this.level));
             nav3.setAttribute('data-service', service);
         }
@@ -293,7 +322,9 @@ export class CollabNav2 extends StateLitElement {
         this._setInitialServicesAfterEnabled();
         this._services = [...(this.actualServices[this.level]?.[this.position] || [])];
         await this.updateComplete;
-        this._activeLastServiceClicked();
+        const afterLevelChange = this._levelChangePending;
+        this._levelChangePending = false;
+        this._activeLastServiceClicked(afterLevelChange);
     }
 
     private _onStatusChanged() {
@@ -333,12 +364,16 @@ export class CollabNav2 extends StateLitElement {
         this.state_ = s;
     }
 
-    private _activeLastServiceClicked() {
+    /**
+     * Re-selects the last service opened in this level/position. After a LEVEL CHANGE the
+     * restore must also move the content nav3 — that is the whole point of remembering it.
+     */
+    private _activeLastServiceClicked(afterLevelChange: boolean = false) {
         const last = this.state_[this.level][this.position];
-        if (!last) { this._fireSelectedChangeNav3(''); return; }
+        if (!last) { this._fireSelectedChangeNav3('', undefined, afterLevelChange); return; }
         const el = this.querySelector(`collab-nav-2-item[data-service="${last}"]`) as HTMLElement;
         const isStaticSelected = el?.getAttribute('isstatic') === 'true' && el?.classList.contains('selected');
-        if (el && !isStaticSelected) this._selectItem(el, last);
+        if (el && !isStaticSelected) this._selectItem(el, last, afterLevelChange);
     }
 
     private async _getUserServices(): Promise<ICollabServiceData> {
