@@ -82,6 +82,8 @@ import '/_102041_/l2/serviceStart.js';
     const afterLoadLibs = async () => {
 
         if (!window['mls']) return;
+        // mls.events exists only after mls.js; startLoading's onmessage is too early.
+        mls.events?.addEventListener([2], ['LoadMonaco'], () => void loadMonaco());
         const hasServiceWorkerInstalled = !!navigator.serviceWorker.controller;
         try {
             await mls.stor.cache.installIfNeeded();
