@@ -179,5 +179,5 @@ Cada versão é imutável e fica no bucket; o rollback é só reapontar a raiz +
   do shell. O que ele gera é do monorepo e fica na **raiz** do `mls-base`:
   `.publishStudio/` e `tsconfig.publishStudio.json` (ambos gitignored lá).
   A conf real (`servers/*.conf`) é gitignored pelo `.gitignore` deste repo.
-- **`pnpm build` / `publishMlsBase.py`** são **outra coisa**: aquele é o publish
+- **`pnpm build` / `publishGit`** são **outra coisa**: aquele é o publish
   de dev dos projetos-cliente para a VM. Este README é só do shell studio no S3.
