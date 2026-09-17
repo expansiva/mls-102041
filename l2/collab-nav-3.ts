@@ -205,8 +205,10 @@ export class CollabNav3 extends StateLitElement {
         // getPath = setFullName(service).getStorFileBase() — folder-aware; the tag must be
         // derived from {project, shortName, folder} so services inside folders resolve too.
         const info = getPath(service);
-        const { project, path } = mls?.actual?.[0] || {};
-        const tagService = convertFileNameToTag(info ?? { shortName: service, project: project ?? 0 });
+        const project = info?.project ?? Number(mls?.actual?.[0]?.project || 0);
+        const shortName = info?.shortName ?? service;
+        const folder = info?.folder ?? '';
+        const tagService = convertFileNameToTag(info ?? { shortName, project });
         content.innerHTML = '';
 
         const attach = (wc: HTMLElement) => {
@@ -230,13 +232,12 @@ export class CollabNav3 extends StateLitElement {
         const promise: Promise<void> = new Promise((resolve, reject) => {
             const script = document.createElement('script');
             script.type = 'module'; script.async = true;
-            if(path?.startsWith('/l2/')) script.src = `/_${project}_${path}.js`;
-            else script.src = `/_${project}_/l2/${path}.js`;
+            script.src = `/_${project}_/l2/${folder ? `${folder}/` : ''}${shortName}.js`;
             content.appendChild(script);
             script.onload = () => { attach(serviceWc); resolve(); };
             script.onerror = () => {
                 this._createToolbarService(content);
-                const key = mls?.stor?.getKeyToFiles(project || 0, 2, path || '', '', '.ts');
+                const key = mls?.stor?.getKeyToFiles(project, 2, shortName, folder, '.ts');
                 reject(new Error(`File: ${key} don't exist`));
             };
         });
