@@ -17,7 +17,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { StateLitElement } from '/_102029_/l2/stateLitElement.js';
-import { SERVICE_START_WIDGET } from '/_102041_/l2/utils.js';
+import { SERVICE_START_WIDGET, levelHasStartService } from '/_102041_/l2/utils.js';
 
 type ICollabServicePosition = 'left' | 'right';
 type ICollabServiceState = 'foreground' | 'background';
@@ -356,7 +356,10 @@ export class CollabNav2 extends StateLitElement {
         for (const key in this.actualServices) {
             const _key = Number.parseInt(key)
             const svc = this.actualServices[_key];
-            if (key === '7') s[key].left = START;
+            // A level without the start service (client app): its left list has no start item in
+            // front, so the default is the FIRST service — the runtime's messages.
+            if (!levelHasStartService(_key)) { if (s[_key].left === '' || s[_key].left === START) s[_key].left = svc.left[0]?.widget || ''; }
+            else if (key === '7') s[key].left = START;
             else if (s[_key].left === '' || s[_key].left === START) s[_key].left = svc.left[1]?.widget || START;
             if (s[_key].right === '') s[_key].right = svc.right[0]?.widget || '';
         }
@@ -393,16 +396,12 @@ export class CollabNav2 extends StateLitElement {
         if (other) other.actualServices = services;
     }
 
-    private _staticServices: ICollabServiceData = {
-        0: { left: [{ widget: SERVICE_START_WIDGET, state: 'foreground', icon: '&#xf059', tooltip: this.msg.start, isStatic: true, visible: true }], right: [] },
-        1: { left: [{ widget: SERVICE_START_WIDGET, state: 'foreground', icon: '&#xf059', tooltip: this.msg.start, isStatic: true, visible: true }], right: [] },
-        2: { left: [{ widget: SERVICE_START_WIDGET, state: 'foreground', icon: '&#xf059', tooltip: this.msg.start, isStatic: true, visible: true }], right: [] },
-        3: { left: [{ widget: SERVICE_START_WIDGET, state: 'foreground', icon: '&#xf059', tooltip: this.msg.start, isStatic: true, visible: true }], right: [] },
-        4: { left: [{ widget: SERVICE_START_WIDGET, state: 'foreground', icon: '&#xf059', tooltip: this.msg.start, isStatic: true, visible: true }], right: [] },
-        5: { left: [{ widget: SERVICE_START_WIDGET, state: 'foreground', icon: '&#xf059', tooltip: this.msg.start, isStatic: true, visible: true }], right: [] },
-        6: { left: [{ widget: SERVICE_START_WIDGET, state: 'foreground', icon: '&#xf059', tooltip: this.msg.start, isStatic: true, visible: true }], right: [] },
-        7: { left: [{ widget: SERVICE_START_WIDGET, state: 'foreground', icon: '&#xf059', tooltip: this.msg.start, isStatic: true, visible: true }], right: [] },
-    };
+    // Before nav1 hands its list, the 'start' status clicks the first static item: a level without
+    // the start service (the client app, levelHasStartService) must not have one to click.
+    private _staticServices: ICollabServiceData = Object.fromEntries([0, 1, 2, 3, 4, 5, 6, 7].map(level => [level, {
+        left: levelHasStartService(level) ? [{ widget: SERVICE_START_WIDGET, state: 'foreground' as const, icon: '&#xf059', tooltip: this.msg.start, isStatic: true, visible: true }] : [],
+        right: [],
+    }]));
 }
 
 window.addEventListener('mls:ready', () => customElements.define('collab-nav-2', CollabNav2), { once: true });

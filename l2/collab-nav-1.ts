@@ -30,7 +30,7 @@ import { property, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { StateLitElement } from '/_102029_/l2/stateLitElement.js';
-import { SERVICE_START_WIDGET } from '/_102041_/l2/utils.js';
+import { SERVICE_START_WIDGET, levelHasStartService } from '/_102041_/l2/utils.js';
 import { getPath, convertFileNameToTag } from '/_102027_/l2/utils.js';
 
 
@@ -484,9 +484,11 @@ export class CollabNav1 extends StateLitElement {
 
         Object.entries(parsedConfig).forEach(([key, value]: [string, any]) => {
             const _key = Number.parseInt(key);
-            if (value.left.length === 1 && value.left[0] === '*') parsedPrefs[_key].left = [staticStart];
+            // No start service inside a client app (levelHasStartService).
+            const start = levelHasStartService(_key) ? [staticStart] : [];
+            if (value.left.length === 1 && value.left[0] === '*') parsedPrefs[_key].left = start;
             else if (value.left.length > 0) {
-                parsedPrefs[_key].left = [staticStart, ...value.left.map((w: string) => ({ icon: '', isStatic: false, state: 'foreground', tooltip: '', visible: true, widget: w }))];
+                parsedPrefs[_key].left = [...start, ...value.left.map((w: string) => ({ icon: '', isStatic: false, state: 'foreground', tooltip: '', visible: true, widget: w }))];
             }
             if (value.right.length === 1 && value.right[0] === '*') parsedPrefs[_key].right = [];
             else if (value.right.length > 0) {

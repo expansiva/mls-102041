@@ -1,6 +1,7 @@
 /// <mls fileReference="_102041_/l2/utils.ts" enhancement="_blank"/>
 
 import { setErrorOnModel } from '/_102027_/l2/utils.js';
+import { isStudioClient } from '/_102029_/l2/utils.js';
 
 import type { IDecoratorDictionary, IDecoratorDetails, IDecoratorClassInfo } from '/_102027_/l2/propiertiesLit.js';
 
@@ -218,5 +219,18 @@ function getDecoratorClassInfo(decoratorString: string): IDecoratorClassInfo | u
 }
 
 export const SERVICE_START_WIDGET = '_102041_serviceStart';
+
+/**
+ * Whether a level carries the start service (the studio home page) on its left toolbar.
+ *
+ * Every level does on on.collab.codes. Inside a client app (the navs mounted by the 102033 runtime
+ * shell) none does, for now: level 7 IS the client layout — messages left, app right — and its home
+ * page was mounted at every app boot, pinned the left panel fullscreen (`setFullScreen(7, 'left')`)
+ * and the shell had to undo it; the home pages of levels 1-6 are left out of the app's studio mode
+ * too. `level` stays in the signature so a level can be given its page back.
+ */
+export function levelHasStartService(_level: number, isClientApp: boolean = isStudioClient()): boolean {
+    return !isClientApp;
+}
 export const COLLAB_LOGIN_PLUGIN = '_100554_pluginCollabLogin';
 export const EXPLORE_PROJECTS_SERVICE = '_100554_serviceExploreProjects';
