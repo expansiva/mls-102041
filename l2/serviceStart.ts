@@ -75,7 +75,7 @@ export class ServiceStart extends ServiceBase {
             const i2 = `/_${'100554'}_${'collabConfigService'}`;
             scr.type = 'module';
             scr.id = i2.replace('/', '');
-            scr.src = i2;
+            scr.src = `/_${'100554'}_/l2/${'collabConfigService'}`;
 
             this._config = document.createElement('div');
             this._config.appendChild(scr);
