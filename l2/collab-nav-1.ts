@@ -175,7 +175,7 @@ export class CollabNav1 extends StateLitElement {
                     </div>
                 ` : nothing}
                 ${this._userAvatarSrc
-                ? html`<img class="avatar" src="${this._userAvatarSrc}" alt="user avatar">`
+                ? html`<img class="avatar" src="${this._userAvatarSrc}" alt="user avatar" referrerpolicy="no-referrer">`
                 : html`${unsafeHTML(item.icon)} ${item.text}`}
             </nav-1-item>
         `;
@@ -434,8 +434,9 @@ export class CollabNav1 extends StateLitElement {
     }
 
     private async _getDetailsServiceCollabInJS3(level: string, position: string, project: number, path: string): Promise<{ details: INav1Service | undefined }> {
-        const target = `/_${project}_${path}.js`;
-        const controller = new AbortController();
+        // Services live in l2; the flat `/_<project>_<name>.js` URL only resolves from the service worker cache.
+        const { folder, shortName } = getPath(`_${project}_${path}`) ?? { folder: '', shortName: path };
+        const target = `/_${project}_/l2/${folder ? folder + '/' : ''}${shortName}.js`;        const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 8000);
         let response: Response;
         try {
