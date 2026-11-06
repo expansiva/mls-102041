@@ -4,16 +4,7 @@ import { PluginBaseIndex } from '/_102027_/l2/pluginBaseIndex.js';
 
 export class PluginCollabCoreIndex extends PluginBaseIndex {
     public getMenus(): mls.plugin.MenuAction[] {
-
-        return [
-            {
-                category: 'Services',
-                scope: ['l5ServicesLeft'],
-                priority: 5,
-                auth: ['*'],
-                widget: '_102041_servicePublish'
-            }
-        ]
+        return [];
     }
 
     public getHooks(): mls.plugin.HookAction[] {
