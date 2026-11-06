@@ -1,10 +1,43 @@
 /// <mls fileReference="_102041_/l2/collab-spliter.ts" enhancement="_102041_/l2/enhancementCollab.ts"/>
 
+/// **collab_i18n_start**
+const message_en = {
+    list: 'List',
+    detail: 'Detail',
+    switchPane: 'Switch panel',
+};
+type MessageType = typeof message_en;
+const message_pt: MessageType = {
+    list: 'Lista',
+    detail: 'Detalhe',
+    switchPane: 'Alternar painel',
+};
+const message_es: MessageType = {
+    list: 'Lista',
+    detail: 'Detalle',
+    switchPane: 'Cambiar panel',
+};
+const messages: { [key: string]: MessageType } = { en: message_en, pt: message_pt, es: message_es };
+/// **collab_i18n_end**
+
 import { nothing } from 'lit';
 import { property } from 'lit/decorators.js';
 import { StateLitElement } from '/_102029_/l2/stateLitElement.js';
+import {
+    layoutSpliter,
+    SPLITER_SEPARATOR_PX,
+    SPLITER_MOBILE_TOGGLE_PX,
+    type SpliterFullscreen,
+    type SpliterLayout,
+    type SpliterLayoutMode,
+    type SpliterPaneId,
+} from '/_102041_/l2/collab-spliterLayout.js';
 
 interface ICollabSpliterItem extends HTMLElement { layout: Function; }
+interface INav2PaneService { state: string; tooltip: string; }
+interface INav2Like {
+    actualServices?: Record<number, { left: INav2PaneService[]; right: INav2PaneService[] }>;
+}
 
 export class CollabSpliter extends StateLitElement {
 
@@ -31,13 +64,16 @@ export class CollabSpliter extends StateLitElement {
     private _leftPanel?: ICollabSpliterItem;
     private _rightPanel?: ICollabSpliterItem;
     private _resizerSplitter?: HTMLElement;
+    private _toggleBar?: HTMLElement;
 
-    private readonly _separatorWidth = 8;
-    private readonly _defaultPx = 375;
+    private readonly _separatorWidth = SPLITER_SEPARATOR_PX;
     private _defaultPanelsWidth = { rightPanel: 0, leftPanel: 0 };
     private _actualPanelsWidth = { rightPanel: 0, leftPanel: 0 };
     private _fullScreenData: string[] = ['', '', '', '', '', '', '', ''];
     private _isDragging = false;
+    private _layoutMode: SpliterLayoutMode | '' = '';
+    private _mobilePane: SpliterPaneId = 'right';
+    private msg: MessageType = messages['en'];
 
     public setFullScreen(level: number, position: 'left' | 'right' | 'default') {
         this._fullScreenData[level] = position === 'default' ? '' : position;
@@ -49,12 +85,14 @@ export class CollabSpliter extends StateLitElement {
 
     firstUpdated(changedProperties: Map<PropertyKey, unknown>) {
         super.firstUpdated(changedProperties);
+        this.msg = messages[this.getMessageKey(messages)] || messages['en'];
         const [left, right] = Array.from(this.children) as ICollabSpliterItem[];
         if (!left || !right) return;
         this._leftPanel = left;
         this._rightPanel = right;
         this._loadUserPreferenceByLevel('', true);
         this._setMSplitFullScreen();
+        this._createToggle();
         const separator = this._createSeparator();
         this.insertBefore(separator, right);
         this.style.height = this.msizeObj.height + 'px';
@@ -80,6 +118,65 @@ export class CollabSpliter extends StateLitElement {
         if (changed.has('fixed') && this._resizerSplitter) this._createSeparator();
     }
 
+    private _createToggle(): HTMLElement {
+        if (this._toggleBar) {
+            this._refreshToggle();
+            return this._toggleBar;
+        }
+        this._toggleBar = document.createElement('div');
+        this._toggleBar.className = 'spliter-mobile-toggle';
+        this._toggleBar.setAttribute('role', 'tablist');
+        this._toggleBar.setAttribute('aria-label', this.msg.switchPane);
+        const leftBtn = document.createElement('button');
+        const rightBtn = document.createElement('button');
+        leftBtn.type = 'button';
+        rightBtn.type = 'button';
+        leftBtn.setAttribute('role', 'tab');
+        rightBtn.setAttribute('role', 'tab');
+        leftBtn.addEventListener('click', () => this._setMobilePane('left'));
+        rightBtn.addEventListener('click', () => this._setMobilePane('right'));
+        this._toggleBar.append(leftBtn, rightBtn);
+        this.insertBefore(this._toggleBar, this.firstChild);
+        this._refreshToggle();
+        return this._toggleBar;
+    }
+
+    private _setMobilePane(pane: SpliterPaneId) {
+        if (this._mobilePane === pane && this._layoutMode === 'mobile') return;
+        this._mobilePane = pane;
+        this._applyPaneLayout();
+    }
+
+    private _paneLabel(pane: SpliterPaneId): string {
+        const fallback = pane === 'left' ? this.msg.list : this.msg.detail;
+        const panel = pane === 'left' ? this._leftPanel : this._rightPanel;
+        if (!panel) return fallback;
+        const nav2 = panel.querySelector('collab-nav-2') as INav2Like | null;
+        const level = +(this.getAttribute('level') || '7');
+        const side = nav2?.actualServices?.[level]?.[pane];
+        const fg = side?.find(s => s.state === 'foreground');
+        const name = (fg?.tooltip || '').trim();
+        return name || fallback;
+    }
+
+    private _refreshToggle(layout?: SpliterLayout) {
+        if (!this._toggleBar) return;
+        const level = +(this.getAttribute('level') || '7');
+        const fs = this._fullScreenData[level];
+        const fullscreenOwnsPane = fs === 'left' || fs === 'right';
+        const show = layout ? layout.showToggle : this._layoutMode === 'mobile' && !fullscreenOwnsPane;
+        this._toggleBar.hidden = !show;
+        const [leftBtn, rightBtn] = Array.from(this._toggleBar.querySelectorAll('button'));
+        if (!leftBtn || !rightBtn) return;
+        leftBtn.textContent = this._paneLabel('left');
+        rightBtn.textContent = this._paneLabel('right');
+        const visible = layout?.visiblePane === 'both' ? this._mobilePane : (layout?.visiblePane || this._mobilePane);
+        leftBtn.setAttribute('aria-pressed', visible === 'left' ? 'true' : 'false');
+        rightBtn.setAttribute('aria-pressed', visible === 'right' ? 'true' : 'false');
+        leftBtn.setAttribute('aria-selected', visible === 'left' ? 'true' : 'false');
+        rightBtn.setAttribute('aria-selected', visible === 'right' ? 'true' : 'false');
+    }
+
     private _createSeparator(): HTMLElement {
         if (this._resizerSplitter) this._resizerSplitter.innerHTML = '';
         else this._resizerSplitter = document.createElement('div');
@@ -94,6 +191,7 @@ export class CollabSpliter extends StateLitElement {
             const leftPanel = this._leftPanel;
             const rightPanel = this._rightPanel;
             if (!leftPanel || !rightPanel) return;
+            if (this._layoutMode === 'mobile') return;
             if (isMobile && !lastPageX) { lastPageX = event.pageX; return; }
 
             const movePx = isMobile ? event.pageX - (lastPageX ?? 0) : event.movementX;
@@ -160,6 +258,7 @@ export class CollabSpliter extends StateLitElement {
 
         if (!this.fixed) {
             this._resizerSplitter.onmousedown = (e) => {
+                if (this._layoutMode === 'mobile') return;
                 isMobile = false;
                 this._isDragging = true;
                 this._toogleIframePointerEvents(false);
@@ -169,6 +268,7 @@ export class CollabSpliter extends StateLitElement {
             };
 
             this._resizerSplitter.ontouchstart = (e) => {
+                if (this._layoutMode === 'mobile') return;
                 e.preventDefault(); isMobile = true; lastPageX = undefined;
                 this._isDragging = true;
                 this._toogleIframePointerEvents(false);
@@ -235,16 +335,23 @@ export class CollabSpliter extends StateLitElement {
 
     private _updateSizePanelsOnSplitChange(lw: number, rw: number) {
         const { height, top, left } = this.msizeObj;
-        const newLeft = +left + this._separatorWidth + lw;
+        const sep = this._layoutMode === 'mobile' ? 0 : this._separatorWidth;
         const level = +(this.getAttribute('level') || '7');
         const fsByLevel = this._fullScreenData[level];
+        const newLeft = +left + sep + lw;
 
         if (fsByLevel === 'left' && rw !== 0) { this._fullScreenData[level] = ''; this._setMSplitFullScreen(); }
         else if (fsByLevel === 'right' && lw !== 0) { this._fullScreenData[level] = ''; this._setMSplitFullScreen(); }
 
+        const fsNow = this._fullScreenData[level];
+        const toggle = this._layoutMode === 'mobile' && fsNow !== 'left' && fsNow !== 'right'
+            ? SPLITER_MOBILE_TOGGLE_PX
+            : 0;
+        const panelHeight = Math.max(0, height - toggle);
+
         if (!this._leftPanel || !this._rightPanel) return;
-        this._setMsizeIfChanged(this._leftPanel, `${lw},${height},${top},0`);
-        this._setMsizeIfChanged(this._rightPanel, `${rw},${height},${top},${newLeft}`);
+        this._setMsizeIfChanged(this._leftPanel, `${lw},${panelHeight},${top},0`);
+        this._setMsizeIfChanged(this._rightPanel, `${rw},${panelHeight},${top},${newLeft}`);
     }
 
     private _setMsizeIfChanged(el: HTMLElement, next: string) {
@@ -264,38 +371,6 @@ export class CollabSpliter extends StateLitElement {
         return true;
     }
 
-    private _setDefaultValues(msize: string) {
-
-        if (!msize || !this._leftPanel || !this._rightPanel) return;
-        const level = +(this.getAttribute('level') || '7');
-        const currentMsize = this.getAttribute('msize');
-        if (!currentMsize) return;
-        const [width, , top, leftP] = currentMsize.split(',');
-        const totalW = parseFloat(width) - this._separatorWidth;
-        const { left, right } = this._getDefaultPxByPercent(totalW);
-
-        let l = left, r = right;
-        if ([3, 4, 5, 6, 7].includes(+level)) { const d = left - this._defaultPx; l = this._defaultPx; r = right + d; }
-
-        this._defaultPanelsWidth = { leftPanel: l, rightPanel: r };
-        this._actualPanelsWidth = { leftPanel: l, rightPanel: r };
-        const newTop = +top;
-        const newLeft2 = +leftP + this._separatorWidth + l;
-        this._leftPanel.setAttribute('msize', `${l},${this.msizeObj.height},${newTop},0`);
-        this._rightPanel.setAttribute('msize', `${r},${this.msizeObj.height},${newTop},${newLeft2}`);
-        this._leftPanel.style.width = l + 'px';
-        this._rightPanel.style.width = r + 'px';
-    }
-
-    private _getDefaultPxByPercent(totalWidth: number): { left: number; right: number } {
-        const lp = this.defaultLeftPanelWidthPercent || 50;
-        const rp = this.defaultRightPanelWidthPercent || 50;
-        return {
-            left: parseFloat(((totalWidth / 100) * lp).toFixed(2)),
-            right: parseFloat(((totalWidth / 100) * rp).toFixed(2)),
-        };
-    }
-
     private _updateSizePanels(msize: string | null) {
         if (!msize || !this._leftPanel) return;
         this._loadUserPreferenceByLevel(msize);
@@ -305,61 +380,72 @@ export class CollabSpliter extends StateLitElement {
     private _loadUserPreferenceByLevel(msize?: string | null, beforeRender = false) {
         if (!msize || !this._leftPanel || !this._rightPanel) return;
         if (!msize && !beforeRender) return;
-        if (!beforeRender) this._setDefaultValues(msize);
+        this._applyPaneLayout();
+    }
 
+    private _applyPaneLayout() {
+        if (!this._leftPanel || !this._rightPanel) return;
+        const { width } = this.msizeObj;
         const level = +(this.getAttribute('level') || '7');
-        const fsByLevel = this._fullScreenData[level];
-        let leftPx: any, rightPx: any;
+        const rawFs = this._fullScreenData[level] || '';
+        const fullscreen: SpliterFullscreen = rawFs === 'left' || rawFs === 'right' ? rawFs : '';
 
-        if (fsByLevel === 'left') { leftPx = '100.00'; rightPx = '0.00'; }
-        else if (fsByLevel === 'right') { leftPx = '0.00'; rightPx = '100.00'; }
-        else {
+        let percentLeft = this.defaultLeftPanelWidthPercent || 50;
+        let percentRight = this.defaultRightPanelWidthPercent || 50;
+        if (fullscreen === '') {
             try {
                 const usermsplit = localStorage.getItem('user-msplit');
                 if (usermsplit) {
                     const data = JSON.parse(usermsplit);
-                    if (data[level]) { const [l, r] = data[level].split(','); leftPx = l; rightPx = r; }
+                    if (data[level]) {
+                        const [l, r] = data[level].split(',');
+                        if (l && r) { percentLeft = parseFloat(l); percentRight = parseFloat(r); }
+                    }
                 }
             } catch { /* unavailable or corrupted — fall through to defaults */ }
         }
 
-        if (!leftPx || !rightPx) { leftPx = this.defaultLeftPanelWidthPercent; rightPx = this.defaultRightPanelWidthPercent; }
+        const layout = layoutSpliter({
+            totalWidth: width,
+            fullscreen,
+            mobilePane: this._mobilePane,
+            previousMode: this._layoutMode,
+            minLeftPx: this.minLeftPxPanel,
+            minRightPx: this.minRightPxPanel,
+            percentLeft,
+            percentRight,
+            useFixedLeft: [3, 4, 5, 6, 7].includes(level),
+        });
 
-        const { left, right } = this._getToolbarPxByPercent(leftPx, rightPx);
-        this._actualPanelsWidth = { leftPanel: left, rightPanel: right };
-
-        if ([3, 4, 5, 6, 7].includes(+level) && fsByLevel !== 'right' && fsByLevel !== 'left') {
-            const d = left - this._defaultPx;
-            const nl = this._defaultPx, nr = right + d;
-            this._leftPanel.style.width = nl + 'px';
-            this._rightPanel.style.width = nr + 'px';
-            this._updateSizePanelsOnSplitChange(nl, nr);
-            if (nl < 1) this._leftPanel.classList.add('hidden');
-            if (nr < 1) this._rightPanel.classList.add('hidden');
-            if (this._rightPanel.layout) this._rightPanel.layout();
-            if (this._leftPanel.layout) this._leftPanel.layout();
-            this._setMsplitIfChanged(nl, nr);
-        } else {
-            this._leftPanel.style.width = left + 'px';
-            this._rightPanel.style.width = right + 'px';
-            this._updateSizePanelsOnSplitChange(left, right);
-            if (left < 1) this._leftPanel.classList.add('hidden');
-            if (right < 1) this._rightPanel.classList.add('hidden');
-            if (this._rightPanel.layout) this._rightPanel.layout();
-            if (this._leftPanel.layout) this._leftPanel.layout();
-            this._setMsplitIfChanged(left, right);
+        if (layout.clearHiddenClosed) {
+            this._leftPanel.classList.remove('hidden', 'closed');
+            this._rightPanel.classList.remove('hidden', 'closed');
         }
-    }
 
-    private _getToolbarPxByPercent(leftPercent: number, rightPercent: number): { left: number; right: number } {
-        const totalWidth = this.msizeObj.width - this._separatorWidth;
-        return {
-            left: parseFloat(((totalWidth / 100) * leftPercent).toFixed(2)),
-            right: parseFloat(((totalWidth / 100) * rightPercent).toFixed(2)),
-        };
+        this._layoutMode = layout.mode;
+        this.classList.toggle('mobile-panes', layout.mode === 'mobile');
+
+        if (layout.mode === 'desktop') {
+            this._defaultPanelsWidth = { leftPanel: layout.leftPx, rightPanel: layout.rightPx };
+        }
+
+        this._actualPanelsWidth = { leftPanel: layout.leftPx, rightPanel: layout.rightPx };
+        this._leftPanel.style.width = layout.leftPx + 'px';
+        this._rightPanel.style.width = layout.rightPx + 'px';
+        if (layout.leftPx < 1) this._leftPanel.classList.add('hidden');
+        else this._leftPanel.classList.remove('hidden');
+        if (layout.rightPx < 1) this._rightPanel.classList.add('hidden');
+        else this._rightPanel.classList.remove('hidden');
+
+        this._updateSizePanelsOnSplitChange(layout.leftPx, layout.rightPx);
+        if (this._rightPanel.layout) this._rightPanel.layout();
+        if (this._leftPanel.layout) this._leftPanel.layout();
+        this._setMsplitIfChanged(layout.leftPx, layout.rightPx);
+        this._refreshToggle(layout);
     }
 
     private _savePreferencesByLevel(msplit: string) {
+        if (this._layoutMode === 'mobile') return;
         const level = +(this.getAttribute('level') || '7');
         const fsByLevel = this._fullScreenData[level];
         if (fsByLevel === 'left' || fsByLevel === 'right') return;
@@ -371,7 +457,7 @@ export class CollabSpliter extends StateLitElement {
         if (!lp || !rp) return;
         try {
             const usermsplit = localStorage.getItem('user-msplit');
-            const data: any[] = usermsplit ? JSON.parse(usermsplit) : ['', '', '', '', '', '', '', ''];
+            const data: string[] = usermsplit ? JSON.parse(usermsplit) : ['', '', '', '', '', '', '', ''];
             data[level] = `${lp},${rp}`;
             localStorage.setItem('user-msplit', JSON.stringify(data));
         } catch { /* private mode or storage full — preferences not persisted */ }
@@ -382,4 +468,6 @@ export class CollabSpliter extends StateLitElement {
     }
 }
 
-window.addEventListener('mls:ready', () => customElements.define('collab-spliter', CollabSpliter), { once: true });
+if (typeof window !== 'undefined') {
+    window.addEventListener('mls:ready', () => customElements.define('collab-spliter', CollabSpliter), { once: true });
+}

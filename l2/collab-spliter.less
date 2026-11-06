@@ -5,9 +5,56 @@ collab-spliter {
     width: 100%;
     height: calc(100% - 30px);
     flex: 1;
+    position: relative;
+
+    > collab-spliter-item {
+        min-width: 0;
+    }
+
+    .spliter-mobile-toggle {
+        display: none;
+    }
 
     .hidden {
         collab-spliter-item {
+            display: none;
+        }
+    }
+
+    &.mobile-panes {
+        flex-wrap: wrap;
+
+        .spliter-mobile-toggle {
+            display: flex;
+            width: 100%;
+            flex: 0 0 100%;
+            height: 32px;
+            box-sizing: border-box;
+            background-color: var(--collab-nav-bg-2);
+            gap: 0.1rem;
+            padding: 2px;
+
+            button {
+                flex: 1;
+                border: 0;
+                cursor: pointer;
+                color: var(--collab-nav-color);
+                background-color: var(--collab-nav-bg-1);
+                font: inherit;
+                font-size: 0.85em;
+
+                &[aria-pressed="true"] {
+                    color: var(--collab-nav-color-active);
+                    background-color: var(--collab-nav-bg-3);
+                }
+            }
+        }
+
+        .spliter-separator {
+            display: none;
+        }
+
+        > collab-spliter-item.hidden {
             display: none;
         }
     }
